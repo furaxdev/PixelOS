@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.pixelos.overlay.accent"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <!-- Retints Settings/SystemUI's accent color (checkboxes, switches, Quick Settings tile
+         highlight, etc.) to PixelOS's brand purple — the same resources OEM/custom-ROM theme
+         packages have targeted since Android P. See README.md in this directory for the
+         verification step before trusting this on a real build. -->
+    <overlay
+        android:targetPackage="android"
+        android:isStatic="true"
+        android:priority="2" />
+
+    <application android:hasCode="false" android:label="PixelOS Accent Overlay" />
+</manifest>

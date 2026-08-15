@@ -54,12 +54,19 @@ don't read "prepared" as "done".
    `dusk`) with `shards` wired as the system default via RRO. Bundling all four into an in-picker
    chooser (rather than just shipping one as the fixed default) needs a wallpaper-picker app —
    tracked as follow-up, not this step.
-3. ⬜ Settings app + Quick Settings restyle — not started.
+3. 🟡 **partially prepared** — **Settings / Quick Settings restyle**: only the system accent color
+   is overlaid so far (`overlay/PixelOSAccentOverlay`, see `vendor/pixelos/README.md`). Layout changes,
+   custom QS tiles, and a themed Settings icon set are unstarted — those need real source patches or
+   a Settings app fork, a plain RRO can't do them.
 4. ✅ **prepared** — **Launcher** (`vendor/pixelos/launcher/`, see its own README): Lawnchair fork
    pinned via `manifests/local_manifests/lawnchair.xml`, imported as a prebuilt (`android_app_import`,
    since Lawnchair is Gradle-built, not Soong) and set as the sole default Home app. Deeper brand
    theming (accent color, default wallpaper inside the launcher itself) is flagged as follow-up —
    needs the real synced source to confirm which resources are safely overlayable.
-5. ⬜ `matissewifi` device tree pulled in via local_manifest, first successful boot — not started.
+5. 🟡 **partially prepared** — `matissewifi` device tree pulled in via local_manifest; product def now
+   exists (`vendor/pixelos/products/pixelos_matissewifi.mk`, mirrors the x86_64 one) but its base
+   makefile filename is flagged `TODO(verify)` — first successful boot still needs a real sync+build.
 6. ⬜ Feature layer: whichever OneUI/ColorOS-style extras you actually want (gestures, always-on
-   display, etc.) — pick these deliberately, don't scope-creep the whole vendor feature list at once.
+   display, etc.) — deliberately **not started without you**: this is the one roadmap step that's
+   pure product decisions (which features, what they should look like), not something to prepare
+   speculatively. Tell me what you want here and I'll scope it.

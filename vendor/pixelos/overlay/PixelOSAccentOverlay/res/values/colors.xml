@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Overrides frameworks/base's system accent colors — used across Settings (switches, checkboxes,
+  radio buttons), Quick Settings (active tile tint), and other system-styled controls that pull
+  from these two resources rather than hardcoding a color.
+
+  TODO(verify): resource names/existence confirmed against AOSP conventions used since Android P,
+  but not against this specific lineage-16.0 (Android 9) tree yet — check
+  frameworks/base/core/res/res/values/colors.xml in the synced source and adjust if the actual
+  resource names differ on this branch. Same class of "prepared, not verified" caveat as the other
+  TODOs in this repo (see docs/ARCHITECTURE.md's roadmap notes).
+-->
+<resources>
+    <color name="accent_device_default_light">#6c4bff</color>
+    <color name="accent_device_default_dark">#6c4bff</color>
+</resources>
