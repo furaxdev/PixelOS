@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+# pixelos-cli — thin wrapper around repo/breakfast/brunch/fastboot for the PixelOS build.
+# Must be run on a real Linux build host (250GB+ disk, 16GB+ RAM). See docs/GETTING_STARTED.md.
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+SRC_DIR="${PIXELOS_SRC_DIR:-$HOME/pixelos-src}"
+MANIFEST_URL="https://github.com/LineageOS/android.git"
+MANIFEST_BRANCH="lineage-16.0"
+KEYS_DIR="${PIXELOS_KEYS_DIR:-$HOME/.pixelos-keys}"
+
+usage() {
+  cat <<'EOF'
+pixelos - PixelOS build helper
+
+Usage:
+  pixelos doctor              Check the build host meets AOSP/LineageOS requirements
+  pixelos init                Install `repo`, verify java/git, set up ccache
+  pixelos sync                repo init + repo sync (source tree lives outside this repo)
+  pixelos device <codename>   breakfast <codename> (fetch/select target config)
+  pixelos build <codename> [variant]   brunch <codename> (variant: eng|userdebug|user, default userdebug)
+  pixelos flash               Print fastboot/Odin flashing steps for the current target
+  pixelos keys                Generate a local release signing keystore (never committed)
+  pixelos clean               mka clean in the source tree
+
+Environment overrides:
+  PIXELOS_SRC_DIR   Where the AOSP/LineageOS source tree lives (default: ~/pixelos-src)
+  PIXELOS_KEYS_DIR  Where signing keys are generated (default: ~/.pixelos-keys)
+EOF
+}
+
+need_src_dir() {
+  if [[ ! -d "$SRC_DIR/.repo" ]]; then
+    echo "error: no synced source tree at $SRC_DIR — run 'pixelos sync' first" >&2
+    exit 1
+  fi
+}
+
+cmd_doctor() {
+  local ok=1
+  echo "== pixelos doctor =="
+
+  local disk_avail_kb
+  disk_avail_kb=$(df -Pk "$HOME" | awk 'NR==2{print $4}')
+  local disk_avail_gb=$((disk_avail_kb / 1024 / 1024))
+  if (( disk_avail_gb < 250 )); then
+    echo "[FAIL] free disk under \$HOME: ${disk_avail_gb}GB (need 250GB+)"; ok=0
+  else
+    echo "[ OK ] free disk under \$HOME: ${disk_avail_gb}GB"
+  fi
+
+  local mem_kb mem_gb
+  mem_kb=$(awk '/MemTotal/{print $2}' /proc/meminfo 2>/dev/null || echo 0)
+  mem_gb=$((mem_kb / 1024 / 1024))
+  if (( mem_gb < 16 )); then
+    echo "[WARN] RAM: ${mem_gb}GB (16GB+ recommended, builds may swap/OOM)"
+  else
+    echo "[ OK ] RAM: ${mem_gb}GB"
+  fi
+
+  for tool in git python3 java repo; do
+    if command -v "$tool" >/dev/null 2>&1; then
+      echo "[ OK ] $tool found: $(command -v "$tool")"
+    else
+      echo "[FAIL] $tool not found"; ok=0
+    fi
+  done
+
+  if (( ok == 1 )); then
+    echo "Host looks ready. Run 'pixelos init' next."
+  else
+    echo "Fix the FAIL items above before continuing."
+    exit 1
+  fi
+}
+
+cmd_init() {
+  mkdir -p "$HOME/bin"
+  if ! command -v repo >/dev/null 2>&1; then
+    echo "Installing repo tool to $HOME/bin/repo ..."
+    curl -fsSL https://storage.googleapis.com/git-repo-downloads/repo -o "$HOME/bin/repo"
+    chmod a+x "$HOME/bin/repo"
+    echo "Add \$HOME/bin to PATH if not already (e.g. in ~/.bashrc): export PATH=\"\$HOME/bin:\$PATH\""
+  else
+    echo "repo already installed: $(command -v repo)"
+  fi
+
+  if ! git config --global user.email >/dev/null 2>&1; then
+    echo "No git identity configured (repo requires one)."
+    read -rp "git user.name: " gname
+    read -rp "git user.email: " gemail
+    git config --global user.name "$gname"
+    git config --global user.email "$gemail"
+  fi
+
+  if ! command -v ccache >/dev/null 2>&1; then
+    echo "[WARN] ccache not found — installs will still work but rebuilds will be slower. Install via your distro's package manager."
+  fi
+
+  echo "init done."
+}
+
+cmd_sync() {
+  mkdir -p "$SRC_DIR"
+  cd "$SRC_DIR"
+  if [[ ! -d .repo ]]; then
+    repo init -u "$MANIFEST_URL" -b "$MANIFEST_BRANCH"
+  fi
+  mkdir -p .repo/local_manifests
+  cp "$REPO_ROOT"/manifests/local_manifests/*.xml .repo/local_manifests/
+  repo sync -c -j"$(nproc)"
+  echo "sync done. Source tree at $SRC_DIR"
+}
+
+cmd_device() {
+  local codename="${1:?usage: pixelos device <codename>}"
+  need_src_dir
+  cd "$SRC_DIR"
+  # shellcheck disable=SC1091
+  source build/envsetup.sh
+  breakfast "$codename"
+}
+
+cmd_build() {
+  local codename="${1:?usage: pixelos build <codename> [variant]}"
+  local variant="${2:-userdebug}"
+  need_src_dir
+  cd "$SRC_DIR"
+  # shellcheck disable=SC1091
+  source build/envsetup.sh
+  brunch "${codename}-${variant}"
+}
+
+cmd_flash() {
+  cat <<'EOF'
+General flashing notes (always check docs/DEVICE_SUPPORT.md for your exact target first):
+
+x86_64 / VirtualBox target:
+  Import out/target/product/pixelos_x86_64/*.iso as a new VirtualBox VM
+  (EFI enabled, 2 vCPU / 4GB RAM minimum) and boot it directly. No flashing needed.
+
+matissewifi (Galaxy Tab 4 SM-T530), physical device:
+  1. Flash a matching TWRP recovery via Odin first (stock bootloader doesn't do fastboot here).
+  2. Boot into recovery, wipe data/cache per a clean-flash checklist.
+  3. adb sideload out/target/product/matissewifi/pixelos-*.zip
+  4. Reboot; first boot can take 10+ minutes on this hardware.
+EOF
+}
+
+cmd_keys() {
+  mkdir -p "$KEYS_DIR"
+  if [[ -f "$KEYS_DIR/releasekey.pk8" ]]; then
+    echo "Keys already exist at $KEYS_DIR — not overwriting."
+    exit 0
+  fi
+  need_src_dir
+  local subject="/C=US/ST=State/L=City/O=PixelOS/OU=PixelOS/CN=PixelOS/emailAddress=pixelos@example.com"
+  for k in releasekey platform shared media networkstack; do
+    "$SRC_DIR/development/tools/make_key" "$KEYS_DIR/$k" "$subject"
+  done
+  echo "Keys generated at $KEYS_DIR (kept out of git via .gitignore — back this up somewhere safe, losing it means you can never sign an OTA update to a device running your old key)."
+}
+
+cmd_clean() {
+  need_src_dir
+  cd "$SRC_DIR"
+  # shellcheck disable=SC1091
+  source build/envsetup.sh
+  mka clean
+}
+
+main() {
+  local cmd="${1:-}"
+  [[ $# -gt 0 ]] && shift || true
+  case "$cmd" in
+    doctor) cmd_doctor "$@" ;;
+    init) cmd_init "$@" ;;
+    sync) cmd_sync "$@" ;;
+    device) cmd_device "$@" ;;
+    build) cmd_build "$@" ;;
+    flash) cmd_flash "$@" ;;
+    keys) cmd_keys "$@" ;;
+    clean) cmd_clean "$@" ;;
+    -h|--help|help|"") usage ;;
+    *) echo "unknown command: $cmd" >&2; usage; exit 1 ;;
+  esac
+}
+
+main "$@"
