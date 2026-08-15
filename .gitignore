@@ -17,3 +17,6 @@ pixelos-src/
 
 # Intermediate frames from vendor/pixelos/tools/gen_assets.py — only the final PNG/zip are committed.
 vendor/pixelos/tools/_build/
+
+# Built out-of-band via Gradle (see vendor/pixelos/launcher/README.md) — build artifact, not source.
+vendor/pixelos/launcher/prebuilt/*.apk

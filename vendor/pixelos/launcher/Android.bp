@@ -1,0 +1,12 @@
+// Imports the prebuilt Lawnchair APK (built out-of-band via Gradle — see README.md in this
+// directory) into the AOSP build as a regular installable package.
+android_app_import {
+    name: "Lawnchair",
+    apk: "prebuilt/Lawnchair.apk",
+    presigned: true,
+    privileged: false,
+    product_specific: true,
+    dex_preopt: {
+        enabled: false,
+    },
+}

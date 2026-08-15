@@ -47,7 +47,11 @@ machine pulls the actual AOSP/LineageOS source into a separate, gitignored worki
    default wallpaper via RRO, and a brand mark ready for the launcher. Prepared as source; actually
    booting it on real hardware still needs step 1 done on a real build machine first.
 3. Settings app + Quick Settings restyle.
-4. Launcher: custom or Lawnchair-based fork with our defaults.
+4. **Launcher** (`vendor/pixelos/launcher/`, see its own README) — Lawnchair fork pinned via
+   `manifests/local_manifests/lawnchair.xml`, imported as a prebuilt (`android_app_import`, since
+   Lawnchair is Gradle-built, not Soong) and set as the sole default Home app. Deeper brand theming
+   (accent color, default wallpaper inside the launcher itself) is flagged as follow-up — needs the
+   real synced source to confirm which resources are safely overlayable.
 5. `matissewifi` device tree pulled in via local_manifest, first successful boot.
 6. Feature layer: whichever OneUI/ColorOS-style extras you actually want (gestures, always-on display, etc.)
    — pick these deliberately, don't scope-creep the whole vendor feature list at once.

@@ -20,9 +20,10 @@ Usage:
   pixelos sync                repo init + repo sync (source tree lives outside this repo)
   pixelos device <codename>   breakfast <codename> (fetch/select target config)
   pixelos build <codename> [variant]   brunch <codename> (variant: eng|userdebug|user, default userdebug)
-  pixelos flash               Print fastboot/Odin flashing steps for the current target
-  pixelos keys                Generate a local release signing keystore (never committed)
-  pixelos clean               mka clean in the source tree
+  pixelos flash                Print fastboot/Odin flashing steps for the current target
+  pixelos keys                 Generate a local release signing keystore (never committed)
+  pixelos launcher-build       Build the Lawnchair fork via Gradle, copy the APK into vendor/pixelos/launcher
+  pixelos clean                mka clean in the source tree
 
 Environment overrides:
   PIXELOS_SRC_DIR   Where the AOSP/LineageOS source tree lives (default: ~/pixelos-src)
@@ -179,6 +180,25 @@ cmd_clean() {
   mka clean
 }
 
+cmd_launcher_build() {
+  need_src_dir
+  local lawnchair_dir="$SRC_DIR/packages/apps/Lawnchair"
+  if [[ ! -d "$lawnchair_dir" ]]; then
+    echo "error: $lawnchair_dir not found — run 'pixelos sync' first (pulls it via manifests/local_manifests/lawnchair.xml)" >&2
+    exit 1
+  fi
+  if ! command -v java >/dev/null 2>&1; then
+    echo "error: no JDK found — Lawnchair's Gradle build needs one separate from the AOSP toolchain" >&2
+    exit 1
+  fi
+  echo "Lawnchair's Gradle assemble task name changes between releases — listing available tasks:"
+  (cd "$lawnchair_dir" && ./gradlew tasks --group lawnchair)
+  echo
+  echo "Run the release assemble task yourself (e.g. ./gradlew assembleXyzRelease from $lawnchair_dir),"
+  echo "then copy the resulting APK to: $REPO_ROOT/vendor/pixelos/launcher/prebuilt/Lawnchair.apk"
+  echo "See vendor/pixelos/launcher/README.md for why this isn't fully automated here."
+}
+
 main() {
   local cmd="${1:-}"
   [[ $# -gt 0 ]] && shift || true
@@ -190,6 +210,7 @@ main() {
     build) cmd_build "$@" ;;
     flash) cmd_flash "$@" ;;
     keys) cmd_keys "$@" ;;
+    launcher-build) cmd_launcher_build "$@" ;;
     clean) cmd_clean "$@" ;;
     -h|--help|help|"") usage ;;
     *) echo "unknown command: $cmd" >&2; usage; exit 1 ;;
