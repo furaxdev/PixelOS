@@ -35,10 +35,10 @@ jobs:
         with:
           python-version: '3.x'
       - run: pip install pillow==12.3.0
-      - name: Regenerate wallpaper + bootanimation, confirm no drift
+      - name: Regenerate wallpaper pack + bootanimation, confirm no drift
         run: |
           python3 vendor/pixelos/tools/gen_assets.py
-          git diff --exit-code -- vendor/pixelos/overlay vendor/pixelos/prebuilt
+          git diff --exit-code -- vendor/pixelos/overlay vendor/pixelos/prebuilt vendor/pixelos/assets/wallpapers
 
   markdown-lint:
     runs-on: ubuntu-latest

@@ -8,11 +8,14 @@ the synced source tree as `vendor/pixelos` by `tools/pixelos-cli/pixelos device`
 config/common.mk                        Shared PixelOS identity (ro.product.*, version, included packages)
 products/AndroidProducts.mk              Registers our product makefiles with the build system
 products/pixelos_x86_64.mk               Product def: inherits lineage_x86_64 + config/common.mk
-overlay/PixelOSWallpaperOverlay/         Runtime Resource Overlay replacing the system default wallpaper
+overlay/PixelOSWallpaperOverlay/         RRO replacing the system default wallpaper with assets/wallpapers/shards.png
 prebuilt/common/media/bootanimation.zip  Boot animation (generated, see tools/gen_assets.py)
+assets/wallpapers/                       Wallpaper pack — 2 geometric (shards, facets) + 2 fluid (waves, dusk)
+                                          variants, source-only beyond the one wired as system default; bundling
+                                          the rest into an in-picker chooser needs a wallpaper-picker app, future work
 assets/brand/                            Brand mark (adaptive icon source) for the future launcher — not
                                           wired into any package yet, that lands with the launcher itself
-tools/gen_assets.py                      Regenerates the wallpaper PNG + bootanimation.zip from scratch
+tools/gen_assets.py                      Regenerates the wallpaper pack + bootanimation.zip from scratch
 ```
 
 ## Regenerating assets
