@@ -42,16 +42,24 @@ machine pulls the actual AOSP/LineageOS source into a separate, gitignored worki
 
 ## Roadmap (rough)
 
-1. `pixelos_x86_64` boots stock LineageOS unmodified — proves the manifest/tooling works.
-2. **Rebrand pass** (`vendor/pixelos/`, see its own README) — `ro.product.*` identity, boot animation,
-   default wallpaper via RRO, and a brand mark ready for the launcher. Prepared as source; actually
-   booting it on real hardware still needs step 1 done on a real build machine first.
-3. Settings app + Quick Settings restyle.
-4. **Launcher** (`vendor/pixelos/launcher/`, see its own README) — Lawnchair fork pinned via
-   `manifests/local_manifests/lawnchair.xml`, imported as a prebuilt (`android_app_import`, since
-   Lawnchair is Gradle-built, not Soong) and set as the sole default Home app. Deeper brand theming
-   (accent color, default wallpaper inside the launcher itself) is flagged as follow-up — needs the
-   real synced source to confirm which resources are safely overlayable.
-5. `matissewifi` device tree pulled in via local_manifest, first successful boot.
-6. Feature layer: whichever OneUI/ColorOS-style extras you actually want (gestures, always-on display, etc.)
-   — pick these deliberately, don't scope-creep the whole vendor feature list at once.
+Status tags: **prepared** = source/tooling exists in this repo, not yet built or booted anywhere (we
+have no real build machine attached to this session — see README "what needs you"). **verified** =
+someone has actually run it on a real build host and confirmed the result. Nothing is "verified" yet;
+don't read "prepared" as "done".
+
+1. ⏳ `pixelos_x86_64` boots stock LineageOS unmodified — proves the manifest/tooling works. Blocks
+   every later step's real-world verification; still needs a first real `pixelos sync` + `build`.
+2. ✅ **prepared** — **Rebrand pass** (`vendor/pixelos/`, see its own README): `ro.product.*` identity,
+   boot animation, and a wallpaper pack (2 geometric — `shards`, `facets` — + 2 fluid — `waves`,
+   `dusk`) with `shards` wired as the system default via RRO. Bundling all four into an in-picker
+   chooser (rather than just shipping one as the fixed default) needs a wallpaper-picker app —
+   tracked as follow-up, not this step.
+3. ⬜ Settings app + Quick Settings restyle — not started.
+4. ✅ **prepared** — **Launcher** (`vendor/pixelos/launcher/`, see its own README): Lawnchair fork
+   pinned via `manifests/local_manifests/lawnchair.xml`, imported as a prebuilt (`android_app_import`,
+   since Lawnchair is Gradle-built, not Soong) and set as the sole default Home app. Deeper brand
+   theming (accent color, default wallpaper inside the launcher itself) is flagged as follow-up —
+   needs the real synced source to confirm which resources are safely overlayable.
+5. ⬜ `matissewifi` device tree pulled in via local_manifest, first successful boot — not started.
+6. ⬜ Feature layer: whichever OneUI/ColorOS-style extras you actually want (gestures, always-on
+   display, etc.) — pick these deliberately, don't scope-creep the whole vendor feature list at once.
