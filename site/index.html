@@ -82,16 +82,15 @@
   .btn.ghost{color:var(--fg); background:var(--card)}
   .btn.ghost:hover{border-color:color-mix(in srgb, var(--accent) 50%, var(--border))}
 
-  /* device mockup */
+  /* device mockup — screen is a fixed vivid wallpaper, deliberately independent of the
+     site's light/dark theme, so icon contrast never depends on --accent resolving inside SVG */
   .mockup{width:min(340px,80vw); filter:drop-shadow(0 30px 60px rgba(0,0,0,.35))}
-  .mockup rect.screen{fill:var(--bg2)}
-  .mockup .statusbar{fill:var(--muted2)}
-  .mockup .icon{fill:url(#iconGrad)}
-  .mockup .icon-label{fill:var(--muted); font-size:6px; font-family:inherit}
-  .mockup .dock{fill:var(--card)}
+  .mockup .statusbar{fill:#fff; opacity:.85}
+  .mockup .icon{fill:rgba(255,255,255,.94)}
+  .mockup .icon-label{fill:rgba(255,255,255,.8); font-size:6.5px; font-family:inherit}
+  .mockup .dock{fill:rgba(255,255,255,.16)}
   .mockup .frame{fill:var(--card); stroke:var(--border); stroke-width:1}
-  .mockup .clock{fill:var(--fg); font-size:15px; font-weight:700; font-family:inherit}
-  .mockup .wallpaper{opacity:.9}
+  .mockup .clock{fill:#fff; font-size:16px; font-weight:700; font-family:inherit}
 
   section{padding:64px 0; border-top:1px solid var(--border-soft)}
   .eyebrow{
@@ -183,20 +182,14 @@
 
         <svg class="mockup" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Aperçu de l'interface PixelOS">
           <defs>
-            <linearGradient id="iconGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="var(--accent)"/>
-              <stop offset="1" stop-color="var(--accent2)"/>
-            </linearGradient>
             <linearGradient id="wallGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="var(--accent)" stop-opacity=".55"/>
-              <stop offset=".5" stop-color="var(--accent2)" stop-opacity=".4"/>
-              <stop offset="1" stop-color="var(--accent3)" stop-opacity=".35"/>
+              <stop offset="0" stop-color="#6c4bff"/>
+              <stop offset=".55" stop-color="#a03bdb"/>
+              <stop offset="1" stop-color="#12b894"/>
             </linearGradient>
           </defs>
           <rect class="frame" x="1" y="1" width="218" height="318" rx="26"/>
-          <rect class="screen wallpaper" x="9" y="9" width="202" height="302" rx="19" fill="url(#wallGrad)"/>
-          <rect class="screen" x="9" y="9" width="202" height="302" rx="19" fill="var(--bg2)" opacity=".55"/>
-          <rect class="screen wallpaper" x="9" y="9" width="202" height="302" rx="19" fill="url(#wallGrad)" opacity=".5"/>
+          <rect x="9" y="9" width="202" height="302" rx="19" fill="url(#wallGrad)"/>
 
           <text class="clock" x="110" y="70" text-anchor="middle">9:41</text>
           <rect class="statusbar" x="20" y="24" width="24" height="4" rx="2" opacity=".6"/>
