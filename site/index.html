@@ -4,122 +4,325 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PixelOS — a custom Android experience</title>
-<meta name="description" content="PixelOS: a LineageOS-based custom Android distribution.">
+<meta name="description" content="PixelOS: a LineageOS-based custom Android distribution with its own launcher, theming and system apps.">
 <style>
   :root{
-    --bg:#0b0c10; --bg2:#111319; --fg:#f2f3f5; --muted:#9aa0ab;
-    --accent:#6c8bff; --accent2:#a56cff; --card:#161822; --border:#242736;
+    --bg:#0a0b0f; --bg2:#111319; --fg:#f4f5f7; --muted:#9198a6; --muted2:#6b7180;
+    --accent:#7c8cff; --accent2:#c56cff; --accent3:#5ce6c2;
+    --card:#14161f; --card-hover:#181b26; --border:#22242f; --border-soft:#1a1c26;
+    --glow1:rgba(124,140,255,.28); --glow2:rgba(197,108,255,.22);
+    --shadow: 0 1px 0 rgba(255,255,255,.03) inset;
   }
   @media (prefers-color-scheme: light){
-    :root{ --bg:#fbfbfd; --bg2:#f2f3f7; --fg:#14151a; --muted:#5b606c;
-      --accent:#3b5bff; --accent2:#7a3bff; --card:#ffffff; --border:#e4e6ee; }
+    :root{
+      --bg:#f7f7fb; --bg2:#eef0f6; --fg:#12131a; --muted:#565c6b; --muted2:#7a8090;
+      --accent:#4a5bff; --accent2:#9b3bff; --accent3:#0fae8c;
+      --card:#ffffff; --card-hover:#ffffff; --border:#e5e7f0; --border-soft:#edeef5;
+      --glow1:rgba(74,91,255,.14); --glow2:rgba(155,59,255,.1);
+      --shadow: 0 1px 0 rgba(255,255,255,.6) inset;
+    }
   }
   *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
   body{
     margin:0; background:var(--bg); color:var(--fg);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    line-height:1.55;
+    line-height:1.6; overflow-x:hidden;
   }
-  .wrap{max-width:960px; margin:0 auto; padding:0 24px}
-  header{padding:96px 0 64px}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 24px}
+
+  nav{
+    position:sticky; top:0; z-index:20; backdrop-filter:blur(12px);
+    background:color-mix(in srgb, var(--bg) 78%, transparent);
+    border-bottom:1px solid var(--border-soft);
+  }
+  nav .wrap{display:flex; align-items:center; justify-content:space-between; height:64px}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.01em; font-size:1.05rem}
+  .brand .dot{
+    width:22px; height:22px; border-radius:7px; flex:none;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+  }
+  nav a.navlink{color:var(--muted); text-decoration:none; font-size:.9rem; margin-left:28px}
+  nav a.navlink:hover{color:var(--fg)}
+  nav .navlinks{display:flex; align-items:center}
+  @media (max-width:640px){ nav .navlinks{display:none} }
+
+  /* hero */
+  header.hero{position:relative; padding:88px 0 72px; overflow:hidden}
+  header.hero::before{
+    content:""; position:absolute; inset:-20% -10% auto -10%; height:640px; z-index:-1;
+    background:
+      radial-gradient(480px 320px at 20% 10%, var(--glow1), transparent 70%),
+      radial-gradient(420px 300px at 85% 30%, var(--glow2), transparent 70%);
+    filter:blur(10px);
+  }
   .badge{
-    display:inline-block; font-size:13px; color:var(--muted); border:1px solid var(--border);
-    border-radius:999px; padding:4px 12px; margin-bottom:20px;
+    display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--muted);
+    border:1px solid var(--border); background:var(--card); border-radius:999px; padding:6px 14px 6px 8px;
   }
+  .badge .pulse{width:7px; height:7px; border-radius:50%; background:var(--accent3); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent3) 25%, transparent)}
+  .hero-grid{display:grid; grid-template-columns:1.1fr .9fr; gap:56px; align-items:center; margin-top:32px}
+  @media (max-width:860px){ .hero-grid{grid-template-columns:1fr} .mockup{justify-self:center} }
+
   h1{
-    font-size:clamp(2.4rem,6vw,4rem); margin:0 0 16px; letter-spacing:-.02em;
-    background:linear-gradient(90deg,var(--fg),var(--accent) 60%,var(--accent2));
+    font-size:clamp(2.6rem,6vw,4.2rem); margin:20px 0 18px; letter-spacing:-.03em; line-height:1.03;
+  }
+  h1 .grad{
+    background:linear-gradient(100deg,var(--accent) 10%,var(--accent2) 60%,var(--accent3) 100%);
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  .tagline{font-size:1.25rem; color:var(--muted); max-width:640px}
-  .cta{margin-top:32px; display:flex; gap:12px; flex-wrap:wrap}
+  .tagline{font-size:1.15rem; color:var(--muted); max-width:520px}
+  .cta{margin-top:34px; display:flex; gap:12px; flex-wrap:wrap}
   .btn{
-    display:inline-block; padding:12px 22px; border-radius:10px; text-decoration:none;
-    font-weight:600; font-size:.95rem; border:1px solid var(--border);
+    display:inline-flex; align-items:center; gap:8px; padding:13px 24px; border-radius:11px; text-decoration:none;
+    font-weight:600; font-size:.95rem; border:1px solid var(--border); transition:transform .15s ease, border-color .15s ease;
   }
-  .btn.primary{background:var(--accent); color:#fff; border-color:transparent}
-  .btn.ghost{color:var(--fg)}
-  section{padding:56px 0; border-top:1px solid var(--border)}
-  h2{font-size:1.6rem; margin:0 0 24px}
-  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(100deg,var(--accent),var(--accent2)); color:#fff; border-color:transparent}
+  .btn.ghost{color:var(--fg); background:var(--card)}
+  .btn.ghost:hover{border-color:color-mix(in srgb, var(--accent) 50%, var(--border))}
+
+  /* device mockup */
+  .mockup{width:min(340px,80vw); filter:drop-shadow(0 30px 60px rgba(0,0,0,.35))}
+  .mockup rect.screen{fill:var(--bg2)}
+  .mockup .statusbar{fill:var(--muted2)}
+  .mockup .icon{fill:url(#iconGrad)}
+  .mockup .icon-label{fill:var(--muted); font-size:6px; font-family:inherit}
+  .mockup .dock{fill:var(--card)}
+  .mockup .frame{fill:var(--card); stroke:var(--border); stroke-width:1}
+  .mockup .clock{fill:var(--fg); font-size:15px; font-weight:700; font-family:inherit}
+  .mockup .wallpaper{opacity:.9}
+
+  section{padding:64px 0; border-top:1px solid var(--border-soft)}
+  .eyebrow{
+    color:var(--accent); font-size:.8rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    margin:0 0 10px;
+  }
+  h2{font-size:1.75rem; margin:0 0 12px; letter-spacing:-.01em}
+  .lede{color:var(--muted); max-width:600px; margin:0 0 36px}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px}
   .card{
-    background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px;
+    background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px;
+    box-shadow:var(--shadow); transition:border-color .15s ease, background .15s ease;
   }
-  .card h3{margin:0 0 8px; font-size:1.05rem}
+  .card:hover{border-color:color-mix(in srgb, var(--accent) 35%, var(--border)); background:var(--card-hover)}
+  .card .ico{
+    width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--accent2) 18%, transparent));
+    margin-bottom:14px;
+  }
+  .card .ico svg{width:18px; height:18px; stroke:var(--accent); fill:none}
+  .card h3{margin:0 0 8px; font-size:1.02rem}
   .card p{margin:0; color:var(--muted); font-size:.92rem}
-  table{width:100%; border-collapse:collapse; font-size:.92rem}
-  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--border)}
-  th{color:var(--muted); font-weight:600}
+
+  /* targets */
+  .targets{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px}
+  .target-card{
+    background:var(--card); border:1px solid var(--border); border-radius:16px; padding:24px;
+  }
+  .target-card .top{display:flex; align-items:start; justify-content:space-between; gap:12px}
+  .target-card h3{margin:0; font-size:1.08rem}
+  .target-card .sub{color:var(--muted2); font-size:.85rem; margin-top:4px}
+  .target-card dl{display:grid; grid-template-columns:auto 1fr; gap:6px 14px; margin:18px 0 0; font-size:.85rem}
+  .target-card dt{color:var(--muted2)}
+  .target-card dd{margin:0; color:var(--muted)}
   code{
     background:var(--bg2); border:1px solid var(--border); border-radius:6px;
-    padding:2px 6px; font-size:.85em;
+    padding:2px 7px; font-size:.85em;
   }
-  footer{padding:48px 0 96px; color:var(--muted); font-size:.85rem}
-  footer a{color:inherit}
-  .status{display:inline-block; padding:2px 10px; border-radius:999px; font-size:.75rem; font-weight:600}
-  .status.planned{background:rgba(108,139,255,.15); color:var(--accent)}
+  .status{display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:999px; font-size:.75rem; font-weight:600; white-space:nowrap}
+  .status.planned{background:color-mix(in srgb, var(--accent) 14%, transparent); color:var(--accent)}
+  .status.planned::before{content:""; width:6px; height:6px; border-radius:50%; background:var(--accent)}
+
+  /* roadmap */
+  .roadmap{list-style:none; margin:0; padding:0; position:relative}
+  .roadmap li{position:relative; padding:0 0 28px 32px; border-left:1px solid var(--border)}
+  .roadmap li:last-child{border-color:transparent; padding-bottom:0}
+  .roadmap li::before{
+    content:""; position:absolute; left:-5px; top:2px; width:9px; height:9px; border-radius:50%;
+    background:var(--card); border:2px solid var(--accent);
+  }
+  .roadmap strong{display:block; margin-bottom:4px; font-size:.98rem}
+  .roadmap span{color:var(--muted); font-size:.88rem}
+
+  footer{padding:56px 0 96px; color:var(--muted2); font-size:.85rem; border-top:1px solid var(--border-soft)}
+  footer .wrap{display:flex; flex-wrap:wrap; gap:8px 20px; align-items:center; justify-content:space-between}
+  footer a{color:var(--muted); text-decoration:none}
+  footer a:hover{color:var(--fg)}
+  .footlinks{display:flex; gap:20px; flex-wrap:wrap}
 </style>
 </head>
 <body>
+  <nav>
+    <div class="wrap">
+      <div class="brand"><span class="dot"></span> PixelOS</div>
+      <div class="navlinks">
+        <a class="navlink" href="#why">Why LineageOS</a>
+        <a class="navlink" href="#targets">Targets</a>
+        <a class="navlink" href="#roadmap">Roadmap</a>
+        <a class="navlink" href="https://github.com/furaxdev/PixelOS">GitHub ↗</a>
+      </div>
+    </div>
+  </nav>
+
   <div class="wrap">
-    <header>
-      <span class="badge">early build — nothing to download yet</span>
-      <h1>PixelOS</h1>
-      <p class="tagline">A custom Android distribution built on LineageOS — its own launcher, theming and
-        system apps, aimed first at a Galaxy Tab 4 10.1 and an x86_64 build for VirtualBox/QEMU.</p>
-      <div class="cta">
-        <a class="btn primary" href="https://github.com/furaxdev/PixelOS">Source on GitHub</a>
-        <a class="btn ghost" href="https://github.com/furaxdev/PixelOS/blob/main/docs/GETTING_STARTED.md">Build it yourself</a>
+    <header class="hero">
+      <span class="badge"><span class="pulse"></span>Early build — nothing to download yet</span>
+
+      <div class="hero-grid">
+        <div>
+          <h1>A custom Android<br>experience, built<br>as <span class="grad">PixelOS</span>.</h1>
+          <p class="tagline">A LineageOS-based distribution with its own launcher, theming and system apps —
+            aimed first at a Galaxy Tab 4 10.1 and an x86_64 build for VirtualBox/QEMU.</p>
+          <div class="cta">
+            <a class="btn primary" href="https://github.com/furaxdev/PixelOS">Source on GitHub</a>
+            <a class="btn ghost" href="https://github.com/furaxdev/PixelOS/blob/main/docs/GETTING_STARTED.md">Build it yourself</a>
+          </div>
+        </div>
+
+        <svg class="mockup" viewBox="0 0 220 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Aperçu de l'interface PixelOS">
+          <defs>
+            <linearGradient id="iconGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--accent)"/>
+              <stop offset="1" stop-color="var(--accent2)"/>
+            </linearGradient>
+            <linearGradient id="wallGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--accent)" stop-opacity=".55"/>
+              <stop offset=".5" stop-color="var(--accent2)" stop-opacity=".4"/>
+              <stop offset="1" stop-color="var(--accent3)" stop-opacity=".35"/>
+            </linearGradient>
+          </defs>
+          <rect class="frame" x="1" y="1" width="218" height="318" rx="26"/>
+          <rect class="screen wallpaper" x="9" y="9" width="202" height="302" rx="19" fill="url(#wallGrad)"/>
+          <rect class="screen" x="9" y="9" width="202" height="302" rx="19" fill="var(--bg2)" opacity=".55"/>
+          <rect class="screen wallpaper" x="9" y="9" width="202" height="302" rx="19" fill="url(#wallGrad)" opacity=".5"/>
+
+          <text class="clock" x="110" y="70" text-anchor="middle">9:41</text>
+          <rect class="statusbar" x="20" y="24" width="24" height="4" rx="2" opacity=".6"/>
+          <rect class="statusbar" x="176" y="24" width="24" height="4" rx="2" opacity=".6"/>
+
+          <g>
+            <!-- app icon grid -->
+            <g transform="translate(24,96)">
+              <rect class="icon" width="32" height="32" rx="9"/>
+              <rect class="icon" x="42" width="32" height="32" rx="9" opacity=".85"/>
+              <rect class="icon" x="84" width="32" height="32" rx="9" opacity=".7"/>
+              <rect class="icon" x="126" width="32" height="32" rx="9" opacity=".55"/>
+              <text class="icon-label" x="16" y="42" text-anchor="middle">Phone</text>
+              <text class="icon-label" x="58" y="42" text-anchor="middle">Chat</text>
+              <text class="icon-label" x="100" y="42" text-anchor="middle">Camera</text>
+              <text class="icon-label" x="142" y="42" text-anchor="middle">Photos</text>
+            </g>
+            <g transform="translate(24,150)">
+              <rect class="icon" width="32" height="32" rx="9" opacity=".85"/>
+              <rect class="icon" x="42" width="32" height="32" rx="9" opacity=".7"/>
+              <rect class="icon" x="84" width="32" height="32" rx="9" opacity=".55"/>
+              <rect class="icon" x="126" width="32" height="32" rx="9" opacity=".4"/>
+              <text class="icon-label" x="16" y="42" text-anchor="middle">Settings</text>
+              <text class="icon-label" x="58" y="42" text-anchor="middle">Store</text>
+              <text class="icon-label" x="100" y="42" text-anchor="middle">Music</text>
+              <text class="icon-label" x="142" y="42" text-anchor="middle">Files</text>
+            </g>
+          </g>
+
+          <rect class="dock" x="24" y="252" width="172" height="46" rx="16"/>
+          <g transform="translate(38,264)">
+            <rect class="icon" width="22" height="22" rx="7"/>
+            <rect class="icon" x="36" width="22" height="22" rx="7" opacity=".85"/>
+            <rect class="icon" x="72" width="22" height="22" rx="7" opacity=".7"/>
+            <rect class="icon" x="108" width="22" height="22" rx="7" opacity=".55"/>
+          </g>
+        </svg>
       </div>
     </header>
 
-    <section>
+    <section id="why">
+      <p class="eyebrow">Approach</p>
       <h2>Why LineageOS-based</h2>
+      <p class="lede">Building AOSP from a blank slate means porting every driver and HAL yourself, per device.
+        Forking an already-maintained base is how every vendor skin actually gets made — so that's what we do.</p>
       <div class="grid">
         <div class="card">
+          <div class="ico"><svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 3v18M3 9h18M3 15h18"/></svg></div>
           <h3>Maintained base</h3>
           <p>Kernel, HAL and drivers already ported per device — the same approach every vendor skin
             (ColorOS, OneUI, MIUI) actually uses.</p>
         </div>
         <div class="card">
+          <div class="ico"><svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4h16v16H4z"/><path stroke-linecap="round" d="M4 9h16M9 9v11"/></svg></div>
           <h3>We build the skin</h3>
           <p>Launcher, system UI, settings, theming, bundled apps — the layer that actually makes an
             Android distro feel like its own OS.</p>
         </div>
         <div class="card">
+          <div class="ico"><svg viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3l7 3v6c0 4.5-3 8-7 9-4-1-7-4.5-7-9V6z"/></svg></div>
           <h3>Security patches</h3>
           <p>Inherits upstream LineageOS CVE fixes instead of freezing on a single AOSP snapshot.</p>
         </div>
       </div>
     </section>
 
-    <section>
+    <section id="targets">
+      <p class="eyebrow">Hardware</p>
       <h2>Targets</h2>
-      <table>
-        <thead><tr><th>Device</th><th>Codename</th><th>Base</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr>
-            <td>Samsung Galaxy Tab 4 10.1 (SM-T530)</td>
-            <td><code>matissewifi</code></td>
-            <td>LineageOS 16.0</td>
-            <td><span class="status planned">Planned</span></td>
-          </tr>
-          <tr>
-            <td>Generic x86_64 (VirtualBox / QEMU)</td>
-            <td><code>pixelos_x86_64</code></td>
-            <td>Android-x86 / AOSP GSI</td>
-            <td><span class="status planned">Planned</span></td>
-          </tr>
-        </tbody>
-      </table>
+      <p class="lede">Two very different build targets, on purpose: one for fast day-to-day iteration, one as
+        the real integration test.</p>
+      <div class="targets">
+        <div class="target-card">
+          <div class="top">
+            <div>
+              <h3>Samsung Galaxy Tab 4 10.1</h3>
+              <div class="sub">SM-T530 · 2014 · Snapdragon 400</div>
+            </div>
+            <span class="status planned">Planned</span>
+          </div>
+          <dl>
+            <dt>Codename</dt><dd><code>matissewifi</code></dd>
+            <dt>Base</dt><dd>LineageOS 16.0 (Android 9)</dd>
+            <dt>Role</dt><dd>Real hardware validation target</dd>
+          </dl>
+        </div>
+        <div class="target-card">
+          <div class="top">
+            <div>
+              <h3>Generic x86_64</h3>
+              <div class="sub">VirtualBox / QEMU</div>
+            </div>
+            <span class="status planned">Planned</span>
+          </div>
+          <dl>
+            <dt>Codename</dt><dd><code>pixelos_x86_64</code></dd>
+            <dt>Base</dt><dd>Android-x86 / AOSP GSI</dd>
+            <dt>Role</dt><dd>Primary dev &amp; UI iteration loop</dd>
+          </dl>
+        </div>
+      </div>
     </section>
 
-    <footer>
-      <div class="wrap" style="padding:0">
-        Built in the open. <a href="https://github.com/furaxdev/PixelOS">GitHub</a> ·
-        <a href="https://github.com/furaxdev/PixelOS/blob/main/docs/ARCHITECTURE.md">Architecture</a>
-      </div>
-    </footer>
+    <section id="roadmap">
+      <p class="eyebrow">What's next</p>
+      <h2>Roadmap</h2>
+      <ul class="roadmap">
+        <li><strong>Boot the base</strong><span>pixelos_x86_64 boots stock LineageOS unmodified — proves the manifest and tooling work.</span></li>
+        <li><strong>Rebrand pass</strong><span>Boot animation, app name/icon, product overlay, default wallpaper.</span></li>
+        <li><strong>Settings &amp; Quick Settings restyle</strong><span>The first real "skin" work.</span></li>
+        <li><strong>Launcher</strong><span>Custom or Lawnchair-based fork with PixelOS defaults.</span></li>
+        <li><strong>matissewifi bring-up</strong><span>Device tree pulled in, first successful boot on real hardware.</span></li>
+        <li><strong>Feature layer</strong><span>Deliberately chosen OneUI/ColorOS-style extras — no scope creep.</span></li>
+      </ul>
+    </section>
   </div>
+
+  <footer>
+    <div class="wrap">
+      <span>Built in the open, © 2026 PixelOS.</span>
+      <div class="footlinks">
+        <a href="https://github.com/furaxdev/PixelOS">GitHub</a>
+        <a href="https://github.com/furaxdev/PixelOS/blob/main/docs/ARCHITECTURE.md">Architecture</a>
+        <a href="https://github.com/furaxdev/PixelOS/blob/main/docs/GETTING_STARTED.md">Getting started</a>
+      </div>
+    </div>
+  </footer>
 </body>
 </html>
