@@ -1,0 +1,16 @@
+# AOSP/LineageOS source tree is synced outside this repo by default (see docs/GETTING_STARTED.md),
+# but ignore it here too in case PIXELOS_SRC_DIR ever points inside the repo.
+/out/
+/.repo/
+pixelos-src/
+
+# Signing keys must never be committed.
+*.pk8
+*.pem
+*.jks
+*.keystore
+.pixelos-keys/
+
+# Editor/OS cruft
+.DS_Store
+*.swp
