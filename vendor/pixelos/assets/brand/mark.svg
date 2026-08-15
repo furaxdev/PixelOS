@@ -1,0 +1,13 @@
+<!-- Brand mark master source — the rounded-square "dot" from site/index.html's nav. Not wired into
+     any package yet; the ic_launcher_*.xml files in this directory are the Android vector-drawable
+     ports of this same mark, ready for whichever launcher package lands later on the roadmap. -->
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6c4bff"/>
+      <stop offset="0.55" stop-color="#a03bdb"/>
+      <stop offset="1" stop-color="#12b894"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="34" fill="url(#g)"/>
+</svg>

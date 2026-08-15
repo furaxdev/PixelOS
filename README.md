@@ -18,7 +18,7 @@ it is the realistic path for a small team. See [docs/ARCHITECTURE.md](docs/ARCHI
 | Target | Codename | Base | Status |
 |---|---|---|---|
 | Samsung Galaxy Tab 4 10.1 (SM-T530) | `matissewifi` | LineageOS 16.0 (Android 9) — last version with a maintained device tree for this SoC (msm8226, 1.5GB RAM) | Planned |
-| Generic x86_64 (VirtualBox / QEMU) | `pixelos_x86_64` | [Android-x86](https://www.android-x86.org/) / AOSP `x86_64` GSI | Planned — primary dev/test loop |
+| Generic x86_64 (VirtualBox / QEMU) | `pixelos_x86_64` | LineageOS's own `lineage_x86_64` target | Planned — primary dev/test loop |
 
 The tablet is 2014-era hardware (Snapdragon 400, 1.5GB RAM) — treat modern-Android-skin ambitions (fluid
 animations, heavy theming engine) as a stretch goal there. The x86_64 VirtualBox target is where you'll do
@@ -29,6 +29,7 @@ and risky (bricking).
 
 ```
 manifests/           LineageOS repo manifest + local_manifests (device/vendor trees to pull in)
+vendor/pixelos/       Rebrand layer: product identity, boot animation, wallpaper RRO, brand mark
 tools/pixelos-cli/    `pixelos` CLI — wraps repo sync / breakfast / brunch / flashing workflows
 site/                 Static landing page (GitHub Pages)
 docs/                 Architecture, getting started, device support notes

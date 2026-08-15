@@ -20,12 +20,25 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install libxml2-utils
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
-      - name: xmllint local_manifests
+      - name: xmllint local_manifests + vendor/pixelos XML
         run: |
-          for f in manifests/local_manifests/*.xml; do
+          for f in manifests/local_manifests/*.xml vendor/pixelos/overlay/*/AndroidManifest.xml; do
             echo "checking $f"
             xmllint --noout "$f"
           done
+
+  gen-assets-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: pip install pillow==12.3.0
+      - name: Regenerate wallpaper + bootanimation, confirm no drift
+        run: |
+          python3 vendor/pixelos/tools/gen_assets.py
+          git diff --exit-code -- vendor/pixelos/overlay vendor/pixelos/prebuilt
 
   markdown-lint:
     runs-on: ubuntu-latest

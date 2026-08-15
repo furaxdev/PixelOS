@@ -14,3 +14,6 @@ pixelos-src/
 # Editor/OS cruft
 .DS_Store
 *.swp
+
+# Intermediate frames from vendor/pixelos/tools/gen_assets.py — only the final PNG/zip are committed.
+vendor/pixelos/tools/_build/

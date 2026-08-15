@@ -110,12 +110,21 @@ cmd_sync() {
   mkdir -p .repo/local_manifests
   cp "$REPO_ROOT"/manifests/local_manifests/*.xml .repo/local_manifests/
   repo sync -c -j"$(nproc)"
+  link_vendor_pixelos
   echo "sync done. Source tree at $SRC_DIR"
+}
+
+link_vendor_pixelos() {
+  # vendor/pixelos isn't a `repo`-managed project — it lives in this repo and gets symlinked in,
+  # so `breakfast`/`lunch` can find our product makefiles and RRO packages.
+  mkdir -p "$SRC_DIR/vendor"
+  ln -sfn "$REPO_ROOT/vendor/pixelos" "$SRC_DIR/vendor/pixelos"
 }
 
 cmd_device() {
   local codename="${1:?usage: pixelos device <codename>}"
   need_src_dir
+  link_vendor_pixelos
   cd "$SRC_DIR"
   # shellcheck disable=SC1091
   source build/envsetup.sh
