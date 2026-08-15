@@ -18,7 +18,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # than a legacy PRODUCT_PACKAGE_OVERLAYS static overlay. Keeps rebasing on upstream LineageOS cheap:
 # we never touch frameworks/base source, only overlay resources at runtime.
 PRODUCT_PACKAGES += \
-    PixelOSWallpaperOverlay
+    PixelOSWallpaperOverlay \
+    PixelOSAccentOverlay
 
 PRODUCT_COPY_FILES += \
     vendor/pixelos/prebuilt/common/media/bootanimation.zip:system/media/bootanimation.zip
