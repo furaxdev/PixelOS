@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.pixelos.overlay.wallpaper"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <!-- Replaces frameworks/base's default_wallpaper drawable at runtime — no source patch needed. -->
+    <overlay
+        android:targetPackage="android"
+        android:isStatic="true"
+        android:priority="1" />
+
+    <application android:hasCode="false" android:label="PixelOS Wallpaper Overlay" />
+</manifest>

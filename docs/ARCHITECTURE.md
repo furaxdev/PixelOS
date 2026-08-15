@@ -43,7 +43,9 @@ machine pulls the actual AOSP/LineageOS source into a separate, gitignored worki
 ## Roadmap (rough)
 
 1. `pixelos_x86_64` boots stock LineageOS unmodified — proves the manifest/tooling works.
-2. Rebrand pass: boot animation, app name/icon, `ro.product.*` overlay, default wallpaper.
+2. **Rebrand pass** (`vendor/pixelos/`, see its own README) — `ro.product.*` identity, boot animation,
+   default wallpaper via RRO, and a brand mark ready for the launcher. Prepared as source; actually
+   booting it on real hardware still needs step 1 done on a real build machine first.
 3. Settings app + Quick Settings restyle.
 4. Launcher: custom or Lawnchair-based fork with our defaults.
 5. `matissewifi` device tree pulled in via local_manifest, first successful boot.
