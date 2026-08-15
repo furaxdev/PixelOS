@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Pulls Lawnchair (open-source, Quickstep-compatible launcher) as the base for PixelOS's home
+  screen. Pinned to a tagged release rather than a moving branch — bump deliberately, see
+  vendor/pixelos/launcher/README.md for the update process.
+-->
+<manifest>
+  <remote name="lawnchair" fetch="https://github.com/LawnchairLauncher/" />
+
+  <project name="lawnchair"
+           path="packages/apps/Lawnchair"
+           remote="lawnchair"
+           revision="refs/tags/v15.0.0-beta3.0" />
+</manifest>

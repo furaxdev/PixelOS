@@ -29,7 +29,8 @@ and risky (bricking).
 
 ```
 manifests/           LineageOS repo manifest + local_manifests (device/vendor trees to pull in)
-vendor/pixelos/       Rebrand layer: product identity, boot animation, wallpaper RRO, brand mark
+vendor/pixelos/       Rebrand layer: product identity, boot animation, wallpaper RRO, brand mark,
+                       and the Lawnchair-based launcher (see vendor/pixelos/launcher/README.md)
 tools/pixelos-cli/    `pixelos` CLI — wraps repo sync / breakfast / brunch / flashing workflows
 site/                 Static landing page (GitHub Pages)
 docs/                 Architecture, getting started, device support notes
@@ -60,6 +61,9 @@ Full walkthrough: [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md).
 - **Signing keys** — generate your own release keystore locally (`tools/pixelos-cli/pixelos keys`); never
   commit it. Store it as a GitHub Actions secret if you want CI to sign builds.
 - **Samsung/Odin USB drivers + bootloader unlock** on the physical tablet — device-side, can't be scripted.
+- **A JDK + Android SDK/Gradle toolchain** to build the launcher — Lawnchair is a Gradle project, separate
+  from the AOSP build's own prebuilt toolchain (`tools/pixelos-cli/pixelos launcher-build` assumes this is
+  already set up; see `vendor/pixelos/launcher/README.md`).
 
 ## License
 
