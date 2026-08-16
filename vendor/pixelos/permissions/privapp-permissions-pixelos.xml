@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Since Android O, a privileged system app must have its "special"/dangerous permissions
+  explicitly allowlisted here — declaring them in AndroidManifest.xml alone isn't enough, they're
+  silently denied at runtime without this file. BIND_ACCESSIBILITY_SERVICE and BIND_DREAM_SERVICE
+  aren't listed here: those are enforced on whoever *binds* to the service (the system), not
+  requested by the app that declares the service, so they don't go through this allowlist.
+-->
+<permissions>
+    <privapp-permissions package="org.pixelos.gestures">
+        <permission name="android.permission.SYSTEM_ALERT_WINDOW" />
+    </privapp-permissions>
+    <privapp-permissions package="org.pixelos.quickpanel">
+        <permission name="android.permission.SYSTEM_ALERT_WINDOW" />
+        <permission name="android.permission.CAMERA" />
+    </privapp-permissions>
+</permissions>

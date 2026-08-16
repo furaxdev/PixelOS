@@ -36,3 +36,18 @@ PRODUCT_PACKAGES += \
 # packages/apps/Trebuchet/Android.mk (or .bp) in the synced tree; fix this line if it's wrong,
 # a stale name here is a silent no-op, not a build error.
 PRODUCT_PACKAGES := $(filter-out Trebuchet TrebuchetQuickStep,$(PRODUCT_PACKAGES))
+
+# Feature layer (roadmap step 6) — see docs/FEATURES.md for what each of these actually does and,
+# importantly, its limitations on this Android 9 base. All three are real system apps, not RROs.
+PRODUCT_PACKAGES += \
+    PixelOSGestures \
+    PixelOSAmbient \
+    PixelOSQuickPanel
+
+PRODUCT_COPY_FILES += \
+    vendor/pixelos/permissions/privapp-permissions-pixelos.xml:system/etc/permissions/privapp-permissions-pixelos.xml
+
+# Sets PixelOSAmbient as the default dream + activates it while docked/charging only — see
+# overlay/PixelOSDreamDefaultsOverlay and docs/FEATURES.md's battery caveat before changing this.
+PRODUCT_PACKAGES += \
+    PixelOSDreamDefaultsOverlay

@@ -66,7 +66,8 @@ don't read "prepared" as "done".
 5. 🟡 **partially prepared** — `matissewifi` device tree pulled in via local_manifest; product def now
    exists (`vendor/pixelos/products/pixelos_matissewifi.mk`, mirrors the x86_64 one) but its base
    makefile filename is flagged `TODO(verify)` — first successful boot still needs a real sync+build.
-6. ⬜ Feature layer: whichever OneUI/ColorOS-style extras you actually want (gestures, always-on
-   display, etc.) — deliberately **not started without you**: this is the one roadmap step that's
-   pure product decisions (which features, what they should look like), not something to prepare
-   speculatively. Tell me what you want here and I'll scope it.
+6. ✅ **prepared** — **Feature layer** (`vendor/pixelos/features/`, see `docs/FEATURES.md`): gesture
+   navigation, always-on display, and a one-handed quick-actions panel — the three you picked. All
+   three are real system apps (not RROs) since our Android 9 base predates the native framework
+   support for gesture nav and one-handed mode; `docs/FEATURES.md` explains that constraint and each
+   feature's approach/limitations in detail, including the AOD-on-LCD battery caveat for `matissewifi`.

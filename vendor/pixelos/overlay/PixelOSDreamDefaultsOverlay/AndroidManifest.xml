@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.pixelos.overlay.dreamdefaults"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <!-- Sets PixelOSAmbient as the default Daydream and its activation triggers — see res/values/config.xml -->
+    <overlay
+        android:targetPackage="android"
+        android:isStatic="true"
+        android:priority="3" />
+
+    <application android:hasCode="false" android:label="PixelOS Dream Defaults Overlay" />
+</manifest>

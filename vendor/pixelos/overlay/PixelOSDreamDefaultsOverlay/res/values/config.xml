@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Wires PixelOSAmbient in as the system default Daydream/screensaver, active while docked or
+  charging — deliberately NOT enabling a general "activate on battery when idle" trigger, since
+  that would just burn battery on matissewifi's LCD panel for no always-on-display benefit. See
+  docs/FEATURES.md for the full explanation.
+
+  TODO(verify): resource names match AOSP's long-standing dream config convention, but haven't been
+  checked against this specific lineage-16.0 frameworks/base/core/res/res/values/config.xml yet —
+  same class of caveat as the other TODOs in this repo.
+-->
+<resources>
+    <string name="config_defaultDreamComponent" translatable="false">org.pixelos.ambient/.AmbientDreamService</string>
+    <bool name="config_dreamsEnabledByDefault">true</bool>
+    <bool name="config_dreamsActivatedOnDockByDefault">true</bool>
+    <bool name="config_dreamsActivatedOnChargeByDefault">true</bool>
+    <bool name="config_dreamsEnabledOnBattery">false</bool>
+</resources>
