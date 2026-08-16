@@ -7,7 +7,7 @@
 <meta name="description" content="PixelOS: a LineageOS-based custom Android distribution with its own launcher, theming and system apps.">
 <style>
   :root{
-    --bg:#0a0b0f; --bg2:#111319; --fg:#f4f5f7; --muted:#9198a6; --muted2:#6b7180;
+    --bg:#000000; --bg2:#0d0e12; --fg:#f4f5f7; --muted:#9198a6; --muted2:#6b7180;
     --accent:#7c8cff; --accent2:#c56cff; --accent3:#5ce6c2;
     --card:#14161f; --card-hover:#181b26; --border:#22242f; --border-soft:#1a1c26;
     --glow1:rgba(124,140,255,.28); --glow2:rgba(197,108,255,.22);
@@ -39,8 +39,9 @@
   nav .wrap{display:flex; align-items:center; justify-content:space-between; height:64px}
   .brand{display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:-.01em; font-size:1.05rem}
   .brand .dot{
-    width:22px; height:22px; border-radius:7px; flex:none;
-    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    width:18px; height:18px; border-radius:6px; flex:none;
+    background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 55%,var(--accent3) 100%);
+    transform:rotate(45deg);
   }
   nav a.navlink{color:var(--muted); text-decoration:none; font-size:.9rem; margin-left:28px}
   nav a.navlink:hover{color:var(--fg)}

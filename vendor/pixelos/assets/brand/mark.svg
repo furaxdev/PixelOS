@@ -1,6 +1,14 @@
-<!-- Brand mark master source — the rounded-square "dot" from site/index.html's nav. Not wired into
-     any package yet; the ic_launcher_*.xml files in this directory are the Android vector-drawable
-     ports of this same mark, ready for whichever launcher package lands later on the roadmap. -->
+<!-- Brand mark master source — the rounded-square "dot" from site/index.html's nav, rotated 45°
+     into a diamond. Not wired into any package yet.
+
+     Deliberately NOT mirrored into ic_launcher_background.xml/ic_launcher_foreground.xml in this
+     same directory: those follow Android's adaptive-icon convention (a full-bleed background layer
+     the OS masks into whatever shape a given launcher/OEM uses — circle, squircle, teardrop, etc.).
+     Rotating a full-bleed layer leaves unpainted corners once a real mask is applied — this diamond
+     treatment is a standalone brand-mark choice for the site/marketing use of the logo, not
+     something that survives the adaptive icon pipeline unmodified. If the launcher (roadmap step 4)
+     ever wants the diamond as its actual icon, that needs its own pass sized to fit the mask's safe
+     zone, not just this file rotated in place. -->
 <svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
@@ -9,5 +17,5 @@
       <stop offset="1" stop-color="#12b894"/>
     </linearGradient>
   </defs>
-  <rect x="8" y="8" width="112" height="112" rx="34" fill="url(#g)"/>
+  <rect x="24" y="24" width="80" height="80" rx="24" fill="url(#g)" transform="rotate(45 64 64)"/>
 </svg>
