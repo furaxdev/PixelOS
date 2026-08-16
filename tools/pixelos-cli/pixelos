@@ -24,10 +24,20 @@ Usage:
   pixelos keys                 Generate a local release signing keystore (never committed)
   pixelos launcher-build       Build the Lawnchair fork via Gradle, copy the APK into vendor/pixelos/launcher
   pixelos clean                mka clean in the source tree
+  pixelos swap-setup [GB]      Create+enable a swapfile (default 24GB) — see below, matters a lot under 16GB RAM
 
 Environment overrides:
   PIXELOS_SRC_DIR   Where the AOSP/LineageOS source tree lives (default: ~/pixelos-src)
   PIXELOS_KEYS_DIR  Where signing keys are generated (default: ~/.pixelos-keys)
+  PIXELOS_JOBS      Parallel build jobs for sync/build (default: nproc). Lower this (e.g. 2) on
+                     low-RAM hosts — fewer concurrent compile/link jobs means less peak memory, at
+                     the cost of build time. See 'pixelos doctor' for a host-specific recommendation.
+
+On a host with under 16GB RAM, the OOM killer can and will kill the build mid-link without warning
+(some linking steps alone want several GB). 'pixelos doctor' checks your swap and tells you whether
+you need more; 'pixelos swap-setup' sets it up. Swap doesn't make the build fast, it makes it *finish*
+instead of getting killed — expect it to lean on disk heavily near the memory ceiling, which is also
+why an SSD matters more on a low-RAM host, not less.
 EOF
 }
 
@@ -51,11 +61,22 @@ cmd_doctor() {
     echo "[ OK ] free disk under \$HOME: ${disk_avail_gb}GB"
   fi
 
-  local mem_kb mem_gb
+  local mem_kb mem_gb swap_kb swap_gb
   mem_kb=$(awk '/MemTotal/{print $2}' /proc/meminfo 2>/dev/null || echo 0)
   mem_gb=$((mem_kb / 1024 / 1024))
+  swap_kb=$(awk '/SwapTotal/{print $2}' /proc/meminfo 2>/dev/null || echo 0)
+  swap_gb=$((swap_kb / 1024 / 1024))
+
   if (( mem_gb < 16 )); then
-    echo "[WARN] RAM: ${mem_gb}GB (16GB+ recommended, builds may swap/OOM)"
+    echo "[WARN] RAM: ${mem_gb}GB (16GB+ recommended — the build WILL get OOM-killed on some steps without enough swap as a safety net)"
+    if (( mem_gb + swap_gb < 16 )); then
+      local need_gb=$((16 - mem_gb))
+      echo "[FAIL] swap: ${swap_gb}GB (RAM+swap = $((mem_gb + swap_gb))GB, under the 16GB floor) — run: pixelos swap-setup ${need_gb}"
+      ok=0
+    else
+      echo "[ OK ] swap: ${swap_gb}GB (RAM+swap = $((mem_gb + swap_gb))GB, covers the 16GB floor — builds will lean on disk, not crash)"
+    fi
+    echo "[HINT] also set PIXELOS_JOBS to something low (e.g. 2) to reduce peak memory per build — see 'pixelos help'"
   else
     echo "[ OK ] RAM: ${mem_gb}GB"
   fi
@@ -110,7 +131,7 @@ cmd_sync() {
   fi
   mkdir -p .repo/local_manifests
   cp "$REPO_ROOT"/manifests/local_manifests/*.xml .repo/local_manifests/
-  repo sync -c -j"$(nproc)"
+  repo sync -c -j"${PIXELOS_JOBS:-$(nproc)}"
   link_vendor_pixelos
   echo "sync done. Source tree at $SRC_DIR"
 }
@@ -139,6 +160,12 @@ cmd_build() {
   cd "$SRC_DIR"
   # shellcheck disable=SC1091
   source build/envsetup.sh
+  # MAKEFLAGS is honored by GNU Make regardless of how brunch/soong_ui invoke it underneath —
+  # more version-portable than guessing whether brunch forwards a -jN argument itself.
+  if [[ -n "${PIXELOS_JOBS:-}" ]]; then
+    echo "Capping build parallelism at PIXELOS_JOBS=$PIXELOS_JOBS (lower peak memory, slower build)"
+    export MAKEFLAGS="-j${PIXELOS_JOBS}"
+  fi
   brunch "${codename}-${variant}"
 }
 
@@ -180,6 +207,52 @@ cmd_clean() {
   mka clean
 }
 
+cmd_swap_setup() {
+  local size_gb="${1:-24}"
+  local swapfile="/swapfile-pixelos"
+
+  if [[ "$(id -u)" -ne 0 ]] && ! sudo -n true 2>/dev/null; then
+    echo "error: needs root (creating a swapfile under / and enabling it via swapon) — re-run with sudo, or ensure passwordless sudo" >&2
+    exit 1
+  fi
+
+  if swapon --show=NAME --noheadings 2>/dev/null | grep -qx "$swapfile"; then
+    echo "$swapfile is already active. Current swap:"
+    swapon --show
+    exit 0
+  fi
+
+  local avail_kb avail_gb
+  avail_kb=$(df -Pk / | awk 'NR==2{print $4}')
+  avail_gb=$((avail_kb / 1024 / 1024))
+  if (( avail_gb < size_gb + 20 )); then
+    echo "error: only ${avail_gb}GB free on / — refusing to carve out ${size_gb}GB for swap without at least 20GB headroom left over. Free up space or pass a smaller size." >&2
+    exit 1
+  fi
+
+  echo "Creating a ${size_gb}GB swapfile at $swapfile (this can take a few minutes)..."
+  if ! sudo fallocate -l "${size_gb}G" "$swapfile" 2>/dev/null; then
+    echo "fallocate unsupported on this filesystem, falling back to dd (slower)..."
+    sudo dd if=/dev/zero of="$swapfile" bs=1M count=$((size_gb * 1024)) status=progress
+  fi
+  sudo chmod 600 "$swapfile"
+  sudo mkswap "$swapfile"
+  sudo swapon "$swapfile"
+
+  echo "Swap active:"
+  swapon --show
+
+  if ! grep -q "^$swapfile " /etc/fstab 2>/dev/null; then
+    read -rp "Persist this swapfile across reboots via /etc/fstab? [y/N] " persist
+    if [[ "$persist" =~ ^[Yy]$ ]]; then
+      echo "$swapfile none swap sw 0 0" | sudo tee -a /etc/fstab >/dev/null
+      echo "Added to /etc/fstab."
+    else
+      echo "Not persisted — it'll disappear on reboot, re-run 'pixelos swap-setup' after if needed."
+    fi
+  fi
+}
+
 cmd_launcher_build() {
   need_src_dir
   local lawnchair_dir="$SRC_DIR/packages/apps/Lawnchair"
@@ -212,6 +285,7 @@ main() {
     keys) cmd_keys "$@" ;;
     launcher-build) cmd_launcher_build "$@" ;;
     clean) cmd_clean "$@" ;;
+    swap-setup) cmd_swap_setup "$@" ;;
     -h|--help|help|"") usage ;;
     *) echo "unknown command: $cmd" >&2; usage; exit 1 ;;
   esac
