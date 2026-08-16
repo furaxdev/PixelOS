@@ -25,13 +25,17 @@ Usage:
   pixelos launcher-build       Build the Lawnchair fork via Gradle, copy the APK into vendor/pixelos/launcher
   pixelos clean                mka clean in the source tree
   pixelos swap-setup [GB]      Create+enable a swapfile (default 24GB) — see below, matters a lot under 16GB RAM
+  pixelos distcc-check         Verify configured distcc helpers are actually reachable and being used
 
 Environment overrides:
-  PIXELOS_SRC_DIR   Where the AOSP/LineageOS source tree lives (default: ~/pixelos-src)
-  PIXELOS_KEYS_DIR  Where signing keys are generated (default: ~/.pixelos-keys)
-  PIXELOS_JOBS      Parallel build jobs for sync/build (default: nproc). Lower this (e.g. 2) on
-                     low-RAM hosts — fewer concurrent compile/link jobs means less peak memory, at
-                     the cost of build time. See 'pixelos doctor' for a host-specific recommendation.
+  PIXELOS_SRC_DIR       Where the AOSP/LineageOS source tree lives (default: ~/pixelos-src)
+  PIXELOS_KEYS_DIR      Where signing keys are generated (default: ~/.pixelos-keys)
+  PIXELOS_JOBS          Parallel build jobs for sync/build (default: nproc). Lower this (e.g. 2) on
+                         low-RAM hosts — fewer concurrent compile/link jobs means less peak memory,
+                         at the cost of build time. See 'pixelos doctor' for a host-specific value.
+  PIXELOS_DISTCC_HOSTS  Space-separated distcc helper hosts (e.g. "192.168.1.50/4") to offload
+                         compile jobs to. Unset by default — see docs/DISTCC_SETUP.md before setting
+                         this, there's real one-time setup on both machines first.
 
 On a host with under 16GB RAM, the OOM killer can and will kill the build mid-link without warning
 (some linking steps alone want several GB). 'pixelos doctor' checks your swap and tells you whether
@@ -153,6 +157,23 @@ cmd_device() {
   breakfast "$codename"
 }
 
+setup_distcc_env() {
+  [[ -z "${PIXELOS_DISTCC_HOSTS:-}" ]] && return 0
+  if ! command -v distcc >/dev/null 2>&1; then
+    echo "error: PIXELOS_DISTCC_HOSTS is set but 'distcc' isn't installed on this (master) machine — sudo apt-get install distcc" >&2
+    exit 1
+  fi
+  echo "distcc enabled, helpers: $PIXELOS_DISTCC_HOSTS"
+  export DISTCC_HOSTS="localhost $PIXELOS_DISTCC_HOSTS"
+  # ccache calls distcc on a cache miss instead of the compiler directly — this is a ccache-native
+  # feature (CCACHE_PREFIX), so it applies whether the underlying build is Make or Soong/Ninja driven.
+  if command -v ccache >/dev/null 2>&1; then
+    export CCACHE_PREFIX=distcc
+  else
+    echo "[WARN] ccache not found — distcc will still work but you lose the local build-cache benefit entirely. Run 'pixelos init' first."
+  fi
+}
+
 cmd_build() {
   local codename="${1:?usage: pixelos build <codename> [variant]}"
   local variant="${2:-userdebug}"
@@ -160,6 +181,7 @@ cmd_build() {
   cd "$SRC_DIR"
   # shellcheck disable=SC1091
   source build/envsetup.sh
+  setup_distcc_env
   # MAKEFLAGS is honored by GNU Make regardless of how brunch/soong_ui invoke it underneath —
   # more version-portable than guessing whether brunch forwards a -jN argument itself.
   if [[ -n "${PIXELOS_JOBS:-}" ]]; then
@@ -167,6 +189,41 @@ cmd_build() {
     export MAKEFLAGS="-j${PIXELOS_JOBS}"
   fi
   brunch "${codename}-${variant}"
+}
+
+cmd_distcc_check() {
+  if [[ -z "${PIXELOS_DISTCC_HOSTS:-}" ]]; then
+    echo "PIXELOS_DISTCC_HOSTS is not set — nothing to check. See docs/DISTCC_SETUP.md." >&2
+    exit 1
+  fi
+  if ! command -v distcc >/dev/null 2>&1; then
+    echo "error: distcc not installed on this machine — sudo apt-get install distcc" >&2
+    exit 1
+  fi
+  echo "Checking each configured helper accepts connections (not that compilation works — just TCP reachability):"
+  for host_spec in $PIXELOS_DISTCC_HOSTS; do
+    # DISTCC_HOSTS syntax: host[:port][/jobs] — strip the /jobs suffix first, THEN split host:port
+    # (doing it in the other order mis-parses "host:port/jobs" since the jobs count follows the port).
+    local hostport="${host_spec%%/*}"
+    local host port
+    if [[ "$hostport" == *:* ]]; then
+      host="${hostport%%:*}"
+      port="${hostport##*:}"
+    else
+      host="$hostport"
+      port=3632
+    fi
+    if timeout 3 bash -c "cat < /dev/null > /dev/tcp/$host/$port" 2>/dev/null; then
+      echo "[ OK ] $host:$port reachable"
+    else
+      echo "[FAIL] $host:$port NOT reachable — is distccd running there? firewall open? see tools/distcc/setup-helper.sh"
+    fi
+  done
+  echo
+  echo "For a real end-to-end check (confirms the toolchain versions actually match, not just that"
+  echo "the port is open), run a build with DISTCC_VERBOSE=1 and watch 'distccmon-text 1' in another"
+  echo "terminal — jobs silently falling back to localhost usually mean a toolchain mismatch, see"
+  echo "tools/distcc/sync-toolchain.sh."
 }
 
 cmd_flash() {
@@ -286,6 +343,7 @@ main() {
     launcher-build) cmd_launcher_build "$@" ;;
     clean) cmd_clean "$@" ;;
     swap-setup) cmd_swap_setup "$@" ;;
+    distcc-check) cmd_distcc_check "$@" ;;
     -h|--help|help|"") usage ;;
     *) echo "unknown command: $cmd" >&2; usage; exit 1 ;;
   esac

@@ -32,6 +32,7 @@ manifests/           LineageOS repo manifest + local_manifests (device/vendor tr
 vendor/pixelos/       Rebrand layer: product identity, boot animation, wallpaper RRO, brand mark,
                        and the Lawnchair-based launcher (see vendor/pixelos/launcher/README.md)
 tools/pixelos-cli/    `pixelos` CLI — wraps repo sync / breakfast / brunch / flashing workflows
+tools/distcc/          Scripts for offloading compile jobs to a second machine, see docs/DISTCC_SETUP.md
 site/                 Static landing page (GitHub Pages)
 docs/                 Architecture, getting started, device support notes
 .github/workflows/    CI: lint/validate on every push, manual/self-hosted build workflow
