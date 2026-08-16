@@ -37,6 +37,10 @@ None of this makes an old dual-core machine fast — a full build can realistica
 on 2014-era hardware vs. 2-4 hours on something modern. Plan on "one build overnight," not rapid
 iteration; that's what `pixelos_x86_64` in VirtualBox is for (see step 4).
 
+Have a second old machine lying around? [docs/DISTCC_SETUP.md](DISTCC_SETUP.md) covers offloading
+compile jobs to it via distcc — real setup time (~1-2h) for a real speedup, with honest caveats
+about when it's not worth it.
+
 ## 2. Install prerequisites + repo tool
 
 ```bash
