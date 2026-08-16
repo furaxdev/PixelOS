@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Matches site/index.html's bg/accent CSS variables so the ambient screen reads as the same brand. -->
+<resources>
+    <color name="ambient_background">#0a0b12</color>
+    <color name="ambient_clock">#f4f5f7</color>
+    <color name="ambient_accent">#6c4bff</color>
+</resources>

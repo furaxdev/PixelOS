@@ -22,7 +22,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libxml2-utils
       - name: xmllint local_manifests + vendor/pixelos XML
         run: |
-          for f in manifests/local_manifests/*.xml vendor/pixelos/overlay/*/AndroidManifest.xml vendor/pixelos/overlay/*/res/values/*.xml; do
+          for f in manifests/local_manifests/*.xml \
+                   vendor/pixelos/overlay/*/AndroidManifest.xml vendor/pixelos/overlay/*/res/values/*.xml \
+                   vendor/pixelos/features/*/AndroidManifest.xml $(find vendor/pixelos/features -name '*.xml') \
+                   vendor/pixelos/permissions/*.xml; do
             echo "checking $f"
             xmllint --noout "$f"
           done

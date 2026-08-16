@@ -1,0 +1,10 @@
+android_app {
+    name: "PixelOSAmbient",
+    srcs: ["src/**/*.kt"],
+    resource_dirs: ["res"],
+    manifest: "AndroidManifest.xml",
+    platform_apis: true,
+    certificate: "platform",
+    privileged: true,
+    product_specific: true,
+}

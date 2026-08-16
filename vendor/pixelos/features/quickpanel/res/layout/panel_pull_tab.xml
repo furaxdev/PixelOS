@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<View xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pull_tab"
+    android:layout_width="14dp"
+    android:layout_height="72dp"
+    android:background="@drawable/pull_tab_background"
+    android:contentDescription="@string/app_name" />

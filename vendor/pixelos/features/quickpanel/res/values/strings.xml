@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PixelOS Quick Panel</string>
+    <string name="notification_channel_name">Quick Panel</string>
+    <string name="notification_text">Quick Panel is active — swipe from the edge to open it</string>
+    <string name="action_flashlight">Flashlight</string>
+    <string name="action_camera">Camera</string>
+    <string name="action_home">Home</string>
+    <string name="action_settings">Settings</string>
+</resources>

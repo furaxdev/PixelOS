@@ -12,6 +12,12 @@ products/pixelos_matissewifi.mk          Product def: inherits the matissewifi d
 overlay/PixelOSWallpaperOverlay/         RRO replacing the system default wallpaper with assets/wallpapers/shards.png
 overlay/PixelOSAccentOverlay/            RRO retinting Settings/Quick Settings' accent color — see its own
                                           resource-name caveat, the rest of Settings/QS restyling is unstarted
+overlay/PixelOSDreamDefaultsOverlay/     RRO setting PixelOSAmbient as the default Daydream, active while
+                                          docked/charging — see features/ambient and docs/FEATURES.md
+features/gestures, ambient, quickpanel   Feature layer (roadmap step 6) — real system apps, not RROs,
+                                          see docs/FEATURES.md for what/why/limitations of each
+permissions/                             privapp-permissions allowlist required for the feature apps' special
+                                          permissions (SYSTEM_ALERT_WINDOW, CAMERA) since Android O
 prebuilt/common/media/bootanimation.zip  Boot animation (generated, see tools/gen_assets.py)
 assets/wallpapers/                       Wallpaper pack — 2 geometric (shards, facets) + 2 fluid (waves, dusk)
                                           variants, source-only beyond the one wired as system default; bundling
