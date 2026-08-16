@@ -72,24 +72,46 @@ don't leave the user guessing whether they're holding a finished file or need to
   on a normal desktop browser (viewport and stage aspect often happen to be close enough there) and
   only shows up as visibly broken on a differently-shaped screen — test the second Artifact preview
   screenshot from an actual mobile-shaped viewport if you can, not just the first desktop-shaped one.
-- **A CSS typewriter reveal (`width: 0 → Nunit` with `steps()`) needs a unit that actually matches
-  the text**, or the reveal clips mid-word with no error, just a silently wrong final frame. For a
-  monospace face, use `ch` — it's exactly one character cell, so `width: 7ch` for a 7-character word
-  is exact, not a guess. An `em`-based guess (`4.15em` to "roughly" fit "PixelOS") is exactly the kind
-  of thing that looks fine in your head and turns out wrong once actually rendered — verify against a
-  screenshot rather than trusting the arithmetic.
+- **Build a CSS typewriter reveal from a box sized to the text's own natural width (`display:
+  inline-block`, no explicit width), revealed via an animated `clip-path: inset(0 100% 0 0)` →
+  `inset(0 0% 0 0)`**, rather than animating `width` from `0` to a guessed target. A guessed `em`
+  value (`4.15em` to "roughly" fit "PixelOS") is the obvious way this goes wrong, but even the
+  seemingly-exact fix — `width: 7ch` for a 7-character word, correct in principle since monospace
+  makes `ch` exact — is still one more moving part than necessary when the font-size involved is
+  itself `cqw`-driven, and one more thing to doubt when something looks clipped. `clip-path` on a
+  naturally-sized box has nothing to compute or guess: it reveals exactly what's already there, by
+  construction, regardless of viewport or font metrics. Put the blinking cursor in a sibling element,
+  absolutely positioned with its own `left: 0% → 100%` animation *of the same box* (matching duration/
+  steps/delay) — it then tracks the reveal edge exactly without ever needing to know the text's pixel
+  width.
+- **Before concluding a reveal is clipped, check whether the screenshot just landed on the
+  animation's exact completion frame, not after it.** `steps()` changes value in discrete jumps, and
+  a screenshot taken at (or a hair before) the precise moment `delay + duration` elapses can catch the
+  render one frame short of the final step — reading exactly like a clipped word even though the
+  animation is defined correctly. Confirm a real bug by checking a moment clearly *inside* the
+  element's stable, fully-settled window (e.g. reveal completes at 4.85s and the scene doesn't start
+  fading until 6.25s — screenshot at 5.5s, not 4.9s), and cross-check the computed `clip-path`/`width`
+  value via `getComputedStyle` if the screenshot still looks wrong. Chasing a timing artifact as if it
+  were a CSS bug wastes a full fix-rebuild-reverify cycle for nothing.
 - **A recurring "status line" motif (terminal-style typed lines, or anything else that types in more
   than once at the same position) needs its own fade-out**, not just a fade-in. If each occurrence's
   animation only handles typing in and holding, the next occurrence starts while the previous one is
   still sitting at full opacity in the same spot — the text visibly mashes together. Give each
   occurrence one self-contained keyframe animation that types in, holds, *and* fades to opacity 0
   before the next one's delay begins, with a real gap between one's end and the next's start.
-- **A blinking-cursor `border-right` needs real width to read as a terminal cursor.** A 2-4px border
-  reads as a stray line, not a cursor — real terminal cursors are roughly one character-cell wide.
-  Use something like `0.5em`–`0.55em`. Also make sure whatever precedes the cursor (a `$`/`>` prompt
-  glyph, if you're using one) is visually distinct from the cursor itself — a thin prompt character
-  can be mistaken for a second cursor, especially at small rendered sizes; a clearly different glyph
-  (a dollar sign, a chevron with real weight) with its own spacing avoids the ambiguity.
+- **A blinking cursor should be its own solid block element, not a wide `border-right` on the text
+  box.** Putting it on the same box as an animated width is a double bug: with the near-universal
+  `* { box-sizing: border-box }` reset, a border wide enough to read as a cursor (real terminal
+  cursors are roughly one character-cell wide, so `border-right: 2-4px` reads as a stray line, not a
+  cursor — use something like `0.5em`) eats directly into that box's own declared width, silently
+  shrinking the room left for the actual characters. A separate cursor element sidesteps this
+  entirely, and pairs naturally with the `clip-path` reveal technique above (see there for how it
+  tracks position). Also don't add a leading prompt glyph (`$`/`>`) unless you've actually checked it
+  reads as text and not as a second cursor at the render's real output size — a thin character next to
+  a solid cursor block, especially after video compression at small display sizes, easily reads as
+  "there are two cursors" rather than "there's a prompt symbol." If it's not clearly pulling its
+  weight, it's simplest and most robust to just leave it out — the typing motion alone reads as a
+  terminal.
 
 ## Delivering
 
