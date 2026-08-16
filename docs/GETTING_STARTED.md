@@ -16,6 +16,27 @@ Check your machine:
 tools/pixelos-cli/pixelos doctor
 ```
 
+### Under 16GB RAM (e.g. an old ThinkPad)
+
+The build **will** get OOM-killed mid-link on some steps without enough swap as a safety net — this
+isn't a maybe. `pixelos doctor` checks RAM+swap against the 16GB floor and tells you what's missing;
+if it fails, set up swap first:
+
+```bash
+tools/pixelos-cli/pixelos swap-setup 24   # creates+enables a 24GB swapfile at /swapfile-pixelos
+```
+
+Also cap parallelism to keep peak memory down (trades build time for headroom — worth it, a slow
+build that finishes beats a fast one that gets killed):
+
+```bash
+export PIXELOS_JOBS=2   # both `sync` and `build` read this; add it to ~/.bashrc to make it stick
+```
+
+None of this makes an old dual-core machine fast — a full build can realistically take 15-30+ hours
+on 2014-era hardware vs. 2-4 hours on something modern. Plan on "one build overnight," not rapid
+iteration; that's what `pixelos_x86_64` in VirtualBox is for (see step 4).
+
 ## 2. Install prerequisites + repo tool
 
 ```bash
@@ -32,8 +53,8 @@ tools/pixelos-cli/pixelos sync
 ```
 
 Runs `repo init` against the LineageOS manifest (branch `lineage-16.0`, matching our oldest target's supported
-version) plus our `manifests/local_manifests/`, then `repo sync -c -j$(nproc)`. First run downloads ~40-70GB
-compressed; budget several hours on a normal connection.
+version) plus our `manifests/local_manifests/`, then `repo sync -c -j${PIXELOS_JOBS:-$(nproc)}`. First run
+downloads ~40-70GB compressed; budget several hours on a normal connection.
 
 ## 4. Pick a target
 
