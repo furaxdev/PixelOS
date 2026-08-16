@@ -1,16 +1,22 @@
 ---
 name: video
-description: Build an animated HTML teaser/presentation sequence for PixelOS (the custom Android OS project in this repo, built on LineageOS) using its real brand assets — wallpapers, brand mark, palette, mockup — for the user to screen-record into a real video. Use this whenever the user asks for a "teaser," "presentation video," "promo video," "demo video," a video "test," or anything about showing off PixelOS visually — even if they just say "make a video" or "/video" without more detail, since there's no other video-generation path in this project. Also use it for milestone-specific videos later (a first-boot demo, a feature showcase for gestures/AOD/quick panel, a wallpaper showcase) once real builds exist — the skill isn't limited to one fixed teaser.
+description: Build an animated HTML teaser/presentation sequence for PixelOS (the custom Android OS project in this repo, built on LineageOS) using its real brand assets — wallpapers, brand mark, palette, mockup — and, where the environment allows it, render it straight to a real MP4 file rather than making the user screen-record it themselves. Use this whenever the user asks for a "teaser," "presentation video," "promo video," "demo video," a video "test," or anything about showing off PixelOS visually — even if they just say "make a video" or "/video" without more detail, since there's no other video-generation path in this project. Also use it for milestone-specific videos later (a first-boot demo, a feature showcase for gestures/AOD/quick panel, a wallpaper showcase) once real builds exist — the skill isn't limited to one fixed teaser.
 ---
 
 # PixelOS video teaser
 
-There is no tool in this environment that outputs an actual video file. What this skill produces is
-a self-contained, animated HTML page — real CSS keyframe animation, orchestrated as a timed sequence
-— published as an Artifact. The user previews it live in the browser and screen-records it
-themselves; that recording is the actual video. Say this plainly when you deliver the result, so
-it's clear the HTML *is* the deliverable and screen-recording is the export step, not a limitation
-you're hiding.
+What this skill builds, underneath, is a self-contained animated HTML page — real CSS keyframe
+animation, orchestrated as a timed sequence. Where that ends up depends on what the environment
+allows:
+
+- **If Bash + network + package install are available**, render it to a real MP4 directly (Chromium
+  + ffmpeg — see `references/export.md`) and deliver the video file. This is the better outcome when
+  it's reachable — the user gets a finished file, not a recording chore.
+- **Otherwise**, publish it as an Artifact and have the user screen-record it themselves.
+
+Try the MP4 path first; fall back to Artifact-only if any step in `references/export.md` isn't
+available in this environment. Either way, say plainly in your delivery message which one happened —
+don't leave the user guessing whether they're holding a finished file or need to do a recording step.
 
 ## Before writing any HTML
 
@@ -52,15 +58,49 @@ you're hiding.
   permits that for a piece with a committed visual world, but still paint `background` and every
   color explicitly rather than leaving anything to inherit from the viewer's theme.
 - Size the artifact's content to the confirmed aspect ratio (e.g. a centered fixed-aspect frame with
-  letterboxing, or full-viewport sized to that ratio) so what the user records matches what they
-  asked for — don't build 16:9 and call it close enough for a 9:16 request.
+  letterboxing, or full-viewport sized to that ratio) so what the user records/renders matches what
+  they asked for — don't build 16:9 and call it close enough for a 9:16 request.
+- **Size everything relative to the fixed-aspect stage box, not the outer viewport.** If that stage
+  is centered/letterboxed inside `100vw`/`100vh` (the natural way to build a fixed 16:9 or 9:16 frame
+  that still fills whatever window it's opened in), don't then size the *contents* of that stage in
+  `vw`/`vh` too — those units are relative to the outer viewport, not your stage box, so on a window
+  whose aspect ratio differs from your stage's (e.g. a narrow mobile screen showing a 16:9 stage
+  letterboxed top and bottom), a size like `22vw` can resolve to something far bigger than the actual
+  stage it's supposed to fit inside, overflowing it. Give the stage `container-type: size` and size
+  its descendants in `cqw`/`cqh` (container query units) instead — those stay relative to the stage's
+  own rendered box no matter how the outer window is shaped. This one is easy to miss when previewing
+  on a normal desktop browser (viewport and stage aspect often happen to be close enough there) and
+  only shows up as visibly broken on a differently-shaped screen — test the second Artifact preview
+  screenshot from an actual mobile-shaped viewport if you can, not just the first desktop-shaped one.
+- **A CSS typewriter reveal (`width: 0 → Nunit` with `steps()`) needs a unit that actually matches
+  the text**, or the reveal clips mid-word with no error, just a silently wrong final frame. For a
+  monospace face, use `ch` — it's exactly one character cell, so `width: 7ch` for a 7-character word
+  is exact, not a guess. An `em`-based guess (`4.15em` to "roughly" fit "PixelOS") is exactly the kind
+  of thing that looks fine in your head and turns out wrong once actually rendered — verify against a
+  screenshot rather than trusting the arithmetic.
+- **A recurring "status line" motif (terminal-style typed lines, or anything else that types in more
+  than once at the same position) needs its own fade-out**, not just a fade-in. If each occurrence's
+  animation only handles typing in and holding, the next occurrence starts while the previous one is
+  still sitting at full opacity in the same spot — the text visibly mashes together. Give each
+  occurrence one self-contained keyframe animation that types in, holds, *and* fades to opacity 0
+  before the next one's delay begins, with a real gap between one's end and the next's start.
+- **A blinking-cursor `border-right` needs real width to read as a terminal cursor.** A 2-4px border
+  reads as a stray line, not a cursor — real terminal cursors are roughly one character-cell wide.
+  Use something like `0.5em`–`0.55em`. Also make sure whatever precedes the cursor (a `$`/`>` prompt
+  glyph, if you're using one) is visually distinct from the cursor itself — a thin prompt character
+  can be mistaken for a second cursor, especially at small rendered sizes; a clearly different glyph
+  (a dollar sign, a chevron with real weight) with its own spacing avoids the ambiguity.
 
 ## Delivering
 
-Publish via the `Artifact` tool. In your message to the user:
+Try `references/export.md`'s pipeline first (Playwright + a real `ffmpeg`, not the stripped one
+Playwright bundles for its own internal use — the reference explains the distinction and why it
+matters) to render an actual MP4 and deliver it as a file. If that pipeline isn't reachable in this
+environment, publish via the `Artifact` tool instead. Either way:
 - Name what focus/ratio/length you built, in case they asked for something and want to confirm it
   matches.
-- Remind them screen-recording the artifact (their OS's screen recorder, or a browser extension) is
-  how they get an actual video file — this skill doesn't export one.
-- If they want changes, iterate on the same artifact (redeploy to the same path/URL) rather than
-  creating a new one each round, per the Artifact tool's own guidance.
+- If you delivered an Artifact rather than a file, say so plainly and remind them screen-recording it
+  (their OS's screen recorder, or a browser extension) is how they get an actual video file.
+- If they want changes, iterate on the same HTML and re-render/redeploy rather than starting over —
+  redeploy an Artifact to the same path/URL per the Artifact tool's own guidance, or just re-run the
+  export pipeline against the updated HTML for the MP4 path.
