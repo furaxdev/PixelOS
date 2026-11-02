@@ -63,9 +63,16 @@ don't read "prepared" as "done".
    since Lawnchair is Gradle-built, not Soong) and set as the sole default Home app. Deeper brand
    theming (accent color, default wallpaper inside the launcher itself) is flagged as follow-up —
    needs the real synced source to confirm which resources are safely overlayable.
-5. 🟡 **partially prepared** — `matissewifi` device tree pulled in via local_manifest; product def now
-   exists (`vendor/pixelos/products/pixelos_matissewifi.mk`, mirrors the x86_64 one) but its base
-   makefile filename is flagged `TODO(verify)` — first successful boot still needs a real sync+build.
+5. 🟡 **partially prepared** — **physical device targets**, plural now rather than a single tablet:
+   `matissewifi` and `kagura` (Sony Xperia XZ, see `docs/DEVICE_SUPPORT.md`) each have a device tree
+   pulled in via local_manifest and a product def (`vendor/pixelos/products/pixelos_<name>.mk`,
+   mirroring the x86_64 one) — both flag a `TODO(verify)` on their base makefile filename, and
+   `kagura`'s tree is community-maintained and less trustworthy than `matissewifi`'s to begin with
+   (see its doc section). Confirms the pattern in `config/common.mk` generalizes: device-specific
+   concerns live only in `products/<name>.mk` + the matching local_manifest, nothing in the shared
+   rebrand/theming/feature layer changes per device. First successful boot on either still needs a
+   real sync+build. Adding a third target should mean writing those two files again, not touching
+   anything under step 2/3/4/6.
 6. ✅ **prepared** — **Feature layer** (`vendor/pixelos/features/`, see `docs/FEATURES.md`): gesture
    navigation, always-on display, and a one-handed quick-actions panel — the three you picked. All
    three are real system apps (not RROs) since our Android 9 base predates the native framework

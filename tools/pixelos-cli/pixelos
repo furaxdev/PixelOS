@@ -239,6 +239,13 @@ matissewifi (Galaxy Tab 4 SM-T530), physical device:
   2. Boot into recovery, wipe data/cache per a clean-flash checklist.
   3. adb sideload out/target/product/matissewifi/pixelos-*.zip
   4. Reboot; first boot can take 10+ minutes on this hardware.
+
+kagura (Sony Xperia XZ, F8331/F8332), physical device:
+  1. fastboot boot a matching TWRP image (don't permanently flash it until you've confirmed it works
+     on this device tree — see docs/DEVICE_SUPPORT.md, this port is less battle-tested than matissewifi's).
+  2. Wipe data/cache per a clean-flash checklist from that temporary TWRP session.
+  3. adb sideload out/target/product/kagura/pixelos-*.zip
+  4. Reboot.
 EOF
 }
 

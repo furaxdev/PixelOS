@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Extra projects for the Sony Xperia XZ (F8331 single-SIM / F8332 dual-SIM, codename kagura — both
+  SKUs share one device tree, the SIM count is a runtime/firmware difference, not a separate port).
+  Pulled in by `tools/pixelos-cli/pixelos sync`. See docs/DEVICE_SUPPORT.md.
+
+  TODO(verify): unlike matissewifi, there is no single actively-maintained LineageOS fork for this
+  codename — Sony's own open-source releases (github.com/sonyxperiadev) stop at AOSP, not LineageOS,
+  and the community LineageOS ports are scattered/unofficial (forum-tracked forks, not an org with a
+  stable release cadence). The project below (djselbeck's) is the most-cited LineageOS-era port as of
+  this writing, pinned to lineage-15.1 (Android 8.1) rather than 16.0 like matissewifi — confirm it
+  still builds before relying on it, and look for a more current fork first:
+    https://github.com/djselbeck/android_device_sony_kagura
+  If that revision/remote 404s, search the LineageOS/XDA forums for "kagura" device tree status before
+  assuming the port is dead — Sony devices of this era get picked up and dropped by different
+  maintainers over time.
+-->
+<manifest>
+  <remote name="kagura" fetch="https://github.com/djselbeck/" />
+
+  <project name="android_device_sony_kagura"
+           path="device/sony/kagura"
+           remote="kagura"
+           revision="lineage-15.1" />
+
+  <!-- Sony's "tama" platform family (kagura/keyaki/kitakami/kagura's siblings) shares a common tree
+       most LineageOS-era Sony ports pull in separately. TODO(verify): confirm the exact org/revision
+       once this is actually synced — Sony common trees have moved between maintainers more than once. -->
+  <project name="android_device_sony_common"
+           path="device/sony/common"
+           remote="kagura"
+           revision="lineage-15.1" />
+
+  <project name="android_kernel_sony_msm8996"
+           path="kernel/sony/msm8996"
+           remote="kagura"
+           revision="lineage-15.1" />
+
+  <project name="android_vendor_sony_kagura"
+           path="vendor/sony/kagura"
+           remote="kagura"
+           revision="lineage-15.1" />
+</manifest>
