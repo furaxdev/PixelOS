@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PixelOS Quick Tiles</string>
+    <string name="tile_aod_label">Always-on display</string>
+    <string name="tile_quickpanel_label">Quick Panel</string>
+</resources>

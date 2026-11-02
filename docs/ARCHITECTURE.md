@@ -54,10 +54,14 @@ don't read "prepared" as "done".
    `dusk`) with `shards` wired as the system default via RRO. Bundling all four into an in-picker
    chooser (rather than just shipping one as the fixed default) needs a wallpaper-picker app —
    tracked as follow-up, not this step.
-3. 🟡 **partially prepared** — **Settings / Quick Settings restyle**: only the system accent color
-   is overlaid so far (`overlay/PixelOSAccentOverlay`, see `vendor/pixelos/README.md`). Layout changes,
-   custom QS tiles, and a themed Settings icon set are unstarted — those need real source patches or
-   a Settings app fork, a plain RRO can't do them.
+3. 🟡 **partially prepared** — **Settings / Quick Settings restyle**: accent color
+   (`overlay/PixelOSAccentOverlay`), a themed icon set for a first slice of Settings
+   (`overlay/PixelOSSettingsIconOverlay`), and two custom Quick Settings tiles
+   (`features/qstiles`, real `TileService` code, not an overlay) are done — see
+   `vendor/pixelos/README.md`'s "Settings / Quick Settings" section for what each one actually
+   covers. **Layout changes remain unstarted and still need a real source patch or a Settings app
+   fork** — a plain RRO genuinely can't restructure a view hierarchy the way it can swap a drawable
+   or a color, that's not a scoping choice, it's a hard limit of the RRO mechanism itself.
 4. ✅ **prepared** — **Launcher** (`vendor/pixelos/launcher/`, see its own README): Lawnchair fork
    pinned via `manifests/local_manifests/lawnchair.xml`, imported as a prebuilt (`android_app_import`,
    since Lawnchair is Gradle-built, not Soong) and set as the sole default Home app. Deeper brand

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.pixelos.qstiles">
+
+    <!-- Needed by AodTileService to flip the system-wide Daydream/screensaver toggle — see its own
+         comment for why this is a raw Settings.Secure key rather than a named constant. -->
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+
+    <application
+        android:label="@string/app_name"
+        android:allowBackup="false"
+        android:hasCode="true">
+
+        <!-- BIND_QUICK_SETTINGS_TILE is enforced on whoever *binds* to the service (SystemUI), not
+             requested by us — same "not in privapp-permissions.xml" reasoning documented there for
+             BIND_DREAM_SERVICE/BIND_ACCESSIBILITY_SERVICE. TileService itself is public API since
+             Android 7.0 (API 24), well under our Android 9 floor — no backport needed here, unlike
+             gestures/one-handed mode (see docs/FEATURES.md). -->
+        <service
+            android:name=".AodTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_aod"
+            android:label="@string/tile_aod_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".QuickPanelTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_quickpanel"
+            android:label="@string/tile_quickpanel_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+    </application>
+</manifest>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.pixelos.overlay.settingsicons"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <!-- Themed icon set for a handful of Settings top-level entries (Wi-Fi, Display, Battery,
+         About phone) — a real RRO can override drawables by resource name just like it overrides
+         values, so this is genuinely doable without patching the Settings app, unlike layout
+         restructuring (see vendor/pixelos/README.md's "Settings / Quick Settings" section for what
+         is and isn't achievable this way).
+
+         TODO(verify): resource names (ic_settings_wifi, ic_settings_display, ic_settings_battery,
+         ic_settings_about) are conventional AOSP Settings drawable names referenced from
+         res/xml/*_settings.xml dashboards, but they drift across Android versions/forks more than
+         frameworks/base's accent-color resources do — confirm each against
+         packages/apps/Settings/res/drawable/ in the synced lineage-16.0 tree, and expect this to be
+         a partial list (not "all of Settings"), not a confirmed one, until checked. Only 4 of many
+         top-level entries are covered here as a first slice — expanding coverage is just adding
+         more drawable/*.xml files with matching names, not an architecture change. -->
+    <overlay
+        android:targetPackage="com.android.settings"
+        android:isStatic="true"
+        android:priority="2" />
+
+    <application android:hasCode="false" android:label="PixelOS Settings Icon Overlay" />
+</manifest>

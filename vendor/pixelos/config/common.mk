@@ -19,7 +19,8 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # we never touch frameworks/base source, only overlay resources at runtime.
 PRODUCT_PACKAGES += \
     PixelOSWallpaperOverlay \
-    PixelOSAccentOverlay
+    PixelOSAccentOverlay \
+    PixelOSSettingsIconOverlay
 
 PRODUCT_COPY_FILES += \
     vendor/pixelos/prebuilt/common/media/bootanimation.zip:system/media/bootanimation.zip
@@ -38,11 +39,14 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES := $(filter-out Trebuchet TrebuchetQuickStep,$(PRODUCT_PACKAGES))
 
 # Feature layer (roadmap step 6) — see docs/FEATURES.md for what each of these actually does and,
-# importantly, its limitations on this Android 9 base. All three are real system apps, not RROs.
+# importantly, its limitations on this Android 9 base. All four are real system apps, not RROs.
+# PixelOSQuickTiles is step 3 work (custom Quick Settings tiles) riding along here since it's a
+# system app like the other three, not because it's the same roadmap item — see docs/FEATURES.md.
 PRODUCT_PACKAGES += \
     PixelOSGestures \
     PixelOSAmbient \
-    PixelOSQuickPanel
+    PixelOSQuickPanel \
+    PixelOSQuickTiles
 
 PRODUCT_COPY_FILES += \
     vendor/pixelos/permissions/privapp-permissions-pixelos.xml:system/etc/permissions/privapp-permissions-pixelos.xml

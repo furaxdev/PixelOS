@@ -4,8 +4,10 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.PixelFormat
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
@@ -33,6 +35,16 @@ class QuickPanelService : Service() {
     private var torchCameraId: String? = null
     private var torchOn = false
 
+    // Dynamically registered (not manifest-declared) so Android O+'s implicit-broadcast background
+    // restrictions don't apply — this only works because QuickPanelService is itself a long-running
+    // foreground service (started from BOOT_COMPLETED), so there's always a live registration to
+    // receive org.pixelos.qstiles's toggle broadcast. See vendor/pixelos/features/qstiles.
+    private val toggleReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == ACTION_TOGGLE_PANEL) togglePanel()
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -40,6 +52,7 @@ class QuickPanelService : Service() {
         torchCameraId = findTorchCameraId()
         startForegroundWithNotification()
         addPullTab()
+        registerReceiver(toggleReceiver, IntentFilter(ACTION_TOGGLE_PANEL))
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -152,10 +165,12 @@ class QuickPanelService : Service() {
         if (torchOn) {
             torchCameraId?.let { id -> runCatching { cameraManager?.setTorchMode(id, false) } }
         }
+        runCatching { unregisterReceiver(toggleReceiver) }
         super.onDestroy()
     }
 
     companion object {
         private const val NOTIFICATION_ID = 1
+        const val ACTION_TOGGLE_PANEL = "org.pixelos.quickpanel.ACTION_TOGGLE"
     }
 }

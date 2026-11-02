@@ -58,6 +58,21 @@ Scoped deliberately small for a first pass — screenshot capture was considered
 the same `performGlobalAction`/accessibility-service path as the gestures feature and didn't seem
 worth duplicating that machinery for v1.
 
+## `vendor/pixelos/features/qstiles` — PixelOSQuickTiles
+
+Not part of this roadmap step (that's step 6) — this is **step 3** (Settings/Quick Settings restyle)
+work that happens to live here because it's a system app like the three above, not an RRO. Two
+`TileService` tiles (public API since Android 7.0/API 24 — no Android-9-floor constraint like
+gestures/one-handed mode have):
+
+- **Always-on display** — a real on/off toggle for the system Daydream feature (`AodTileService`),
+  tracks and reflects actual state via `Settings.Secure`.
+- **Quick Panel** — a momentary trigger (`QuickPanelTileService`) that broadcasts to
+  `PixelOSQuickPanel` to open/close its pull-out panel. **Not** a true toggle: there's no way for
+  this tile to know the panel's real expanded state from another process, so unlike the AOD tile it
+  always shows inactive and just fires on tap rather than faking a tracked state that could drift
+  out of sync with reality.
+
 ## Status
 
 **Prepared, not verified** — same status as everything else in `vendor/pixelos/` per
@@ -68,8 +83,11 @@ report back here (or just fix and PR) once that happens.
 
 ## Wiring
 
-All three are added to `PRODUCT_PACKAGES` in `vendor/pixelos/config/common.mk`, each
+All four are added to `PRODUCT_PACKAGES` in `vendor/pixelos/config/common.mk`, each
 `product_specific: true` and privileged (`certificate: "platform"`), with a
 `privapp-permissions-pixelos.xml` allowlisting the special permissions (`SYSTEM_ALERT_WINDOW`, the
-accessibility-bound `performGlobalAction`, etc.) that privileged apps must have explicitly allowlisted
-since Android O — declaring a permission in the manifest alone isn't enough for a system app.
+accessibility-bound `performGlobalAction`, `WRITE_SECURE_SETTINGS` for the AOD tile, etc.) that
+privileged apps must have explicitly allowlisted since Android O — declaring a permission in the
+manifest alone isn't enough for a system app. `BIND_QUICK_SETTINGS_TILE`/`BIND_DREAM_SERVICE`/
+`BIND_ACCESSIBILITY_SERVICE` are *not* in that allowlist file — those are enforced on whoever binds
+to the service (the system), not requested by the app declaring it.

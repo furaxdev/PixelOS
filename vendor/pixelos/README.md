@@ -11,11 +11,15 @@ products/pixelos_x86_64.mk               Product def: inherits lineage_x86_64 + 
 products/pixelos_matissewifi.mk          Product def: inherits the matissewifi device tree + config/common.mk
 overlay/PixelOSWallpaperOverlay/         RRO replacing the system default wallpaper with assets/wallpapers/shards.png
 overlay/PixelOSAccentOverlay/            RRO retinting Settings/Quick Settings' accent color — see its own
-                                          resource-name caveat, the rest of Settings/QS restyling is unstarted
+                                          resource-name caveat
+overlay/PixelOSSettingsIconOverlay/      RRO reskinning a first slice of Settings' top-level icons (Wi-Fi,
+                                          Display, Battery, About phone) — partial coverage by design, see
+                                          its own manifest comment before assuming it covers "all of Settings"
 overlay/PixelOSDreamDefaultsOverlay/     RRO setting PixelOSAmbient as the default Daydream, active while
                                           docked/charging — see features/ambient and docs/FEATURES.md
-features/gestures, ambient, quickpanel   Feature layer (roadmap step 6) — real system apps, not RROs,
-                                          see docs/FEATURES.md for what/why/limitations of each
+features/gestures, ambient, quickpanel,
+features/qstiles                         Feature layer (roadmap steps 6 and, for qstiles, 3) — real system
+                                          apps, not RROs, see docs/FEATURES.md for what/why/limitations of each
 permissions/                             privapp-permissions allowlist required for the feature apps' special
                                           permissions (SYSTEM_ALERT_WINDOW, CAMERA) since Android O
 prebuilt/common/media/bootanimation.zip  Boot animation (generated, see tools/gen_assets.py)
@@ -43,7 +47,22 @@ default wallpaper, and a brand mark ready for later use.
 
 ## Settings / Quick Settings (roadmap step 3)
 
-Only the system accent color is touched so far (`overlay/PixelOSAccentOverlay`) — that's the smallest
-real slice of "restyle Settings/QS" that a plain RRO can do without patching `frameworks/base` or the
-Settings app itself. Layout changes, custom Quick Settings tiles, or a themed Settings icon set are
-not started; they'd need actual source patches or a Settings app fork, not just a resource overlay.
+Three real pieces now, each chosen because it's achievable without patching `frameworks/base` or
+forking the Settings app — and one deliberately **not** attempted because it isn't:
+
+- **Accent color** (`overlay/PixelOSAccentOverlay`) — RRO, values overlay.
+- **A themed icon set** (`overlay/PixelOSSettingsIconOverlay`) — RRO, drawable overlay. RROs can
+  override drawables the same way they override values, so this is genuinely free once you know the
+  resource names — the catch is *knowing the resource names*, which drift more across
+  Android versions/forks than the accent-color ones do. Only 4 of Settings' many top-level entries
+  are covered as a first slice (see the overlay's own manifest comment); it's real but partial.
+- **Custom Quick Settings tiles** (`features/qstiles`, `PixelOSQuickTiles`) — not an overlay at all,
+  a real system app using the public `TileService` API (stable since Android 7.0, no Android-9-floor
+  constraint the way gesture nav/one-handed mode have). An Always-on-display toggle and a Quick Panel
+  trigger. See `docs/FEATURES.md` for what each tile does and doesn't track.
+- **Layout changes** — still genuinely not started, and still not achievable via RRO. Overriding a
+  drawable or a color by resource name is safe; restructuring a `LinearLayout` into a card-based
+  grouping the way OneUI/ColorOS do means the overlay's replacement layout has to match the exact
+  view ID hierarchy the compiled Settings app code expects, or it crashes at inflate time rather than
+  silently no-op'ing like a stale package-name filter would. That's a real source patch or Settings
+  app fork, not a resource-overlay project — unchanged from the earlier assessment.

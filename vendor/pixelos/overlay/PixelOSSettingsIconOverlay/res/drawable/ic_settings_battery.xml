@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Plain original shape: battery body + nub + fill level, tinted brand violet. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#6c4bff"
+        android:strokeWidth="2"
+        android:pathData="M4,8h14v8h-14z" />
+    <path android:fillColor="#6c4bff" android:pathData="M18,10h2v4h-2z" />
+    <path android:fillColor="#6c4bff" android:pathData="M6,10h6v4h-6z" />
+</vector>
