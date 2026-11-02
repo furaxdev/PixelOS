@@ -19,6 +19,8 @@ Usage:
   pixelos init                Install `repo`, verify java/git, set up ccache
   pixelos sync                repo init + repo sync (source tree lives outside this repo)
   pixelos device <codename>   breakfast <codename> (fetch/select target config)
+  pixelos gsi-prep             One-time prep for pixelos_gsi_arm64 only — generates its base product
+                                makefile from the phh treble tree. Run after sync, before 'device'. See docs/GSI.md
   pixelos build <codename> [variant]   brunch <codename> (variant: eng|userdebug|user, default userdebug)
   pixelos flash                Print fastboot/Odin flashing steps for the current target
   pixelos keys                 Generate a local release signing keystore (never committed)
@@ -157,6 +159,21 @@ cmd_device() {
   breakfast "$codename"
 }
 
+cmd_gsi_prep() {
+  # One-time step for the pixelos_gsi_arm64 target only — generates the real treble_arm64_*.mk
+  # product makefiles that vendor/pixelos/products/pixelos_gsi_arm64.mk inherits from. Device-tied
+  # targets (matissewifi, kagura, x86_64) don't need this, their product makefiles exist already.
+  # Run this once after 'pixelos sync' and before 'pixelos device pixelos_gsi_arm64'. See docs/GSI.md.
+  need_src_dir
+  if [[ ! -f "$SRC_DIR/device/phh/treble/generate.sh" ]]; then
+    echo "error: device/phh/treble not found under $SRC_DIR — did manifests/local_manifests/gsi_treble.xml sync correctly? Run 'pixelos sync' again." >&2
+    exit 1
+  fi
+  cd "$SRC_DIR/device/phh/treble"
+  ./generate.sh lineage
+  echo "gsi-prep done. 'pixelos device pixelos_gsi_arm64' should now find its base product makefile."
+}
+
 setup_distcc_env() {
   [[ -z "${PIXELOS_DISTCC_HOSTS:-}" ]] && return 0
   if ! command -v distcc >/dev/null 2>&1; then
@@ -246,6 +263,17 @@ kagura (Sony Xperia XZ, F8331/F8332), physical device:
   2. Wipe data/cache per a clean-flash checklist from that temporary TWRP session.
   3. adb sideload out/target/product/kagura/pixelos-*.zip
   4. Reboot.
+
+pixelos_gsi_arm64 (generic Treble GSI), ANY Treble-compliant device — completely different flow,
+read docs/GSI.md first, especially the "will this actually boot on your phone" caveats:
+  1. Confirm the phone is Project Treble-compliant AND its vendor partition's Android version lines
+     up with ours (currently Android 9-based) — a mismatched GSI is the most common reason this
+     fails to boot, not a flashing mistake.
+  2. fastboot flash system out/target/product/treble_arm64_bvN/system.img
+     (a GSI is a system-only image — no sideload zip, no vendor/boot partition touched)
+  3. fastboot -w   (wipe data — required after any GSI system swap)
+  4. Reboot. If it bootloops, boot back to fastboot, flash the phone's stock system.img back before
+     troubleshooting — don't chase a GSI issue from a dead boot loop.
 EOF
 }
 
@@ -344,6 +372,7 @@ main() {
     init) cmd_init "$@" ;;
     sync) cmd_sync "$@" ;;
     device) cmd_device "$@" ;;
+    gsi-prep) cmd_gsi_prep "$@" ;;
     build) cmd_build "$@" ;;
     flash) cmd_flash "$@" ;;
     keys) cmd_keys "$@" ;;

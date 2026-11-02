@@ -71,8 +71,17 @@ don't read "prepared" as "done".
    (see its doc section). Confirms the pattern in `config/common.mk` generalizes: device-specific
    concerns live only in `products/<name>.mk` + the matching local_manifest, nothing in the shared
    rebrand/theming/feature layer changes per device. First successful boot on either still needs a
-   real sync+build. Adding a third target should mean writing those two files again, not touching
-   anything under step 2/3/4/6.
+   real sync+build. Adding another per-device target should mean writing those two files again, not
+   touching anything under step 2/3/4/6.
+7. 🟡 **partially prepared** — **GSI target** (`pixelos_gsi_arm64`, see `docs/GSI.md`): a different
+   answer to "need a build per phone" than step 5 — a system-only image installable on any Project
+   Treble-compliant phone (≈2017+) instead of one more per-device tree, via the phh treble project
+   (`manifests/local_manifests/gsi_treble.xml`). Deliberately **not** a replacement for step 5:
+   `matissewifi`/`kagura` both predate Treble and get nothing from this. Has an open version-
+   alignment question more fundamental than the usual per-device `TODO(verify)`s — this repo's whole
+   manifest is pinned to Android 9 (`lineage-16.0`), and the right phh-tree branch to match that
+   hasn't been confirmed. Read `docs/GSI.md` in full before syncing or flashing this target; it's the
+   least proven step on this list, not just unbuilt.
 6. ✅ **prepared** — **Feature layer** (`vendor/pixelos/features/`, see `docs/FEATURES.md`): gesture
    navigation, always-on display, and a one-handed quick-actions panel — the three you picked. All
    three are real system apps (not RROs) since our Android 9 base predates the native framework

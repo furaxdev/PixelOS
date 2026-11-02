@@ -2,7 +2,8 @@
 PRODUCT_MAKEFILES := \
     $(LOCAL_DIR)/pixelos_x86_64.mk \
     $(LOCAL_DIR)/pixelos_matissewifi.mk \
-    $(LOCAL_DIR)/pixelos_kagura.mk
+    $(LOCAL_DIR)/pixelos_kagura.mk \
+    $(LOCAL_DIR)/pixelos_gsi_arm64.mk
 
 COMMON_LUNCH_CHOICES := \
     pixelos_x86_64-eng \
@@ -11,4 +12,6 @@ COMMON_LUNCH_CHOICES := \
     pixelos_matissewifi-userdebug \
     pixelos_matissewifi-user \
     pixelos_kagura-userdebug \
-    pixelos_kagura-user
+    pixelos_kagura-user \
+    pixelos_gsi_arm64-userdebug \
+    pixelos_gsi_arm64-user

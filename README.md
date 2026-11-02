@@ -19,15 +19,23 @@ it is the realistic path for a small team. See [docs/ARCHITECTURE.md](docs/ARCHI
 |---|---|---|---|
 | Samsung Galaxy Tab 4 10.1 (SM-T530) | `matissewifi` | LineageOS 16.0 (Android 9) — last version with a maintained device tree for this SoC (msm8226, 1.5GB RAM) | Planned |
 | Sony Xperia XZ (F8331 single-SIM / F8332 dual-SIM) | `kagura` | Community LineageOS 15.1 (Android 8.1) port — less actively maintained than matissewifi's, see docs/DEVICE_SUPPORT.md | Planned |
+| **Any Project Treble phone (2017+)** | `pixelos_gsi_arm64` | Generic System Image (arm64, A/B, vanilla) via the phh treble project — **not** a per-device build, see docs/GSI.md for what this covers and, importantly, doesn't | Planned |
 | Generic x86_64 (VirtualBox / QEMU) | `pixelos_x86_64` | LineageOS's own `lineage_x86_64` target | Planned — primary dev/test loop |
 
 The rebrand/theming/feature layer (`vendor/pixelos/`) is device-agnostic by design — `config/common.mk` has
-no device-specific logic, only `products/<name>.mk` does — so adding a target is "write one product makefile
-+ one local_manifest," not a fork of the whole layer. `kagura` exists as proof of that, not because it's
-better-supported hardware: the tablet's tree is the more trustworthy one to build against. The x86_64
-VirtualBox target is where you'll do almost all day-to-day development and UI iteration regardless of which
-device you're ultimately targeting, because build-test-flash cycles on real hardware are slow and risky
-(bricking).
+no device-specific logic, only `products/<name>.mk` does — so adding a per-device target is "write one
+product makefile + one local_manifest," not a fork of the whole layer. `kagura` exists as proof of that, not
+because it's better-supported hardware: the tablet's tree is the more trustworthy one to build against.
+
+`pixelos_gsi_arm64` is a different kind of answer to "do we need a build per phone": instead of one more
+device tree, it's a **system-only image that installs on any Treble-compliant phone** (2017+, roughly) because
+the hardware-specific half (the `vendor` partition) comes from the phone itself. It does **not** cover
+`matissewifi` or `kagura` — both predate Project Treble — and it comes with real version-alignment caveats;
+**read `docs/GSI.md` before assuming it "just works" on a given phone.**
+
+The x86_64 VirtualBox target is where you'll do almost all day-to-day development and UI iteration regardless
+of which device you're ultimately targeting, because build-test-flash cycles on real hardware are slow and
+risky (bricking).
 
 ## Repository layout
 

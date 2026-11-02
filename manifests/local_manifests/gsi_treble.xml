@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Generic Treble device tree (phh's project) — NOT a device tree for one phone, this is what makes
+  pixelos_gsi_arm64 installable on any Project Treble-compliant device instead of one model at a
+  time. See docs/GSI.md before touching this file — the version-alignment caveat there matters more
+  here than on any per-device local_manifest in this folder.
+
+  TODO(verify): phhusson/device_phh_treble's branches track specific Android platform versions (this
+  project has synced android-8.0/android-10.0/android-14.0 branches at various points per public
+  build guides) — there is no confirmed branch name for Android 9 specifically, which is what
+  MANIFEST_BRANCH in tools/pixelos-cli/pixelos is pinned to. Check
+  https://github.com/phhusson/device_phh_treble/branches directly for the closest match before
+  syncing — `master` may track current AOSP rather than any Pie-era branch, which would NOT match
+  our platform source and would likely fail to build or produce a non-compliant image. This is a
+  more open question than the matissewifi/kagura TODOs: it may mean the Android-9-wide pin in
+  tools/pixelos-cli/pixelos needs revisiting specifically for this target, not just this one file.
+-->
+<manifest>
+  <remote name="phhtreble" fetch="https://github.com/phhusson/" />
+
+  <project name="device_phh_treble"
+           path="device/phh/treble"
+           remote="phhtreble"
+           revision="master" />
+</manifest>
